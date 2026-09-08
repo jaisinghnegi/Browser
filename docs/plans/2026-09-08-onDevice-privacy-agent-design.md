@@ -185,3 +185,35 @@ Tested per phase, not only at the end:
 - Which local vision model/detector to standardize on (decide during Phase 1
   once a real model has been run and measured, not before).
 - Exact PII category list and labeling schema for Phase 2's test set.
+
+## 7. PS-alignment gaps tracked against SIH26171 (added 2026-09-08, per Astra's cross-check)
+
+Astra cross-checked current progress against the community-mirrored SIH26171 problem
+statement (official `sih.gov.in` PS page returned 403 at check time, so this provenance is
+provisional — re-verify against the organizer's own PS text before final submission). Two
+gaps that Phase 2's current scope (bounded address/phone/email fixtures, deterministic
+FastAPI planner) does **not** close, and must not be allowed to quietly drop off the plan:
+
+- **Server planner**: the PS calls for a centralized LLM/VLM interpreting sanitized visual
+  context. The current deterministic FastAPI planner (Phase 0/1) is scaffolding to prove the
+  privacy boundary, not a stand-in for this requirement — real LLM/VLM planner integration
+  remains an explicit, tracked, not-yet-started deliverable.
+- **Sensitive-content coverage**: the PS's examples extend beyond this project's bounded
+  Phase 2 categories (address/phone/email) — e.g. passwords, faces. Phase 2 as scoped does
+  not complete this requirement; broader category coverage is a tracked gap, not an oversight.
+
+**Official rubric weights to preserve as benchmark targets** (do not let internal Phase
+4 benchmark design drift from these without deliberately re-checking against the PS):
+
+| Criterion | Weight |
+|---|---|
+| Visual-context accuracy | 25% |
+| Sensitive-content detection precision/recall | 20% |
+| Redaction precision | 20% |
+| Client-side resource utilization | 20% |
+| End-to-end task latency | 15% |
+
+No interruption to the in-progress local-only Phase 2 implementation is needed for this —
+tracked here so these two gaps and the rubric weights survive into later-phase planning
+rather than being implicitly forgotten once Phase 2's narrower scope reads as "PII detection
+done."
