@@ -29,6 +29,8 @@ port.onMessage.addListener(message => {
     status.textContent = 'Planner receives references only…';
   } else if (message.type === 'RESULT') {
     generation++; busy(false); status.textContent = message.status;
+    // Machine-checkable outcome for tests; not rendered, so it can't leak page/planner text.
+    status.dataset.reason = message.reason ?? '';
   }
 });
 port.onDisconnect.addListener(() => { generation++; busy(false); run.disabled = true; status.textContent = 'Connection closed. Reopen the extension.'; });

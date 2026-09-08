@@ -31,6 +31,16 @@ Port **8171** is deliberate: port 8000 was already occupied on the development m
 
 Refresh the fixture to run again: the agent refuses to overwrite a nonempty input. Cancel or close the popup to abandon a pending task. Reload the unpacked extension after rebuilding. `npm.cmd run dev` watches TypeScript changes; rebuild after changing static HTML, CSS or the manifest.
 
+The window must be tall/wide enough that the shipping-address field is **fully** inside the
+viewport (`captureVisibleTab` only captures what's on screen, and a partially-offscreen field
+means the model never saw the pixels it would need to). A maximized window comfortably clears
+this; if the status shows "field is not fully visible", enlarge the window or scroll the field
+into full view before retrying. Every terminal status also carries a fixed `data-reason`
+attribute on the status element (e.g. `observation-failed`, `field-not-visible`,
+`vision-failed`, `stale-observation`, `planner-action-rejected`, `execution-rejected`,
+`timeout`, `cancelled`, `navigated`, `success`) for scripted/test inspection; it is never
+built from page or planner text.
+
 ## Privacy boundary
 
 | Local extension only | Planner receives |

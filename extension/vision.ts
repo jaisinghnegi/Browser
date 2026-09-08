@@ -21,7 +21,6 @@ export async function inspectScreenshot(dataUrl: string): Promise<VisionResult> 
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) throw new Error('No image context');
   ctx.drawImage(image, 0, 0, width, height);
-  image.src = '';
   const rgba = ctx.getImageData(0, 0, width, height).data;
   // Erase the scratch canvas as soon as preprocessing has read its pixels.
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height);

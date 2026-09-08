@@ -17,6 +17,10 @@
     const r = node.getBoundingClientRect();
     return [r.x, r.y, r.width, r.height, innerWidth, innerHeight, devicePixelRatio].join(',');
   };
+  // Distinguished from other observation failures so the popup can tell "wrong/invalid
+  // page state" apart from "the field exists but captureVisibleTab can't see all of it" —
+  // the latter is expected on a short window, not a sign the agent is broken.
+  class VisibilityError extends Error {}
   function getField(): HTMLInputElement {
     if (location.href !== 'http://localhost:8171/fixture') throw new Error('Unsupported page');
     const nodes = document.querySelectorAll('#shipping-address');
@@ -25,9 +29,12 @@
         node.disabled || node.readOnly || node.value !== '') throw new Error('Invalid field');
     const r = node.getBoundingClientRect();
     const style = getComputedStyle(node);
+    // captureVisibleTab only captures the viewport: a partially-offscreen field means the
+    // pixels the vision model scores don't cover the target. Keep this strict rather than
+    // relaxing it — see README for the minimum window size this requires.
     if (r.width <= 0 || r.height <= 0 || r.top < 0 || r.left < 0 || r.bottom > innerHeight || r.right > innerWidth ||
         style.visibility !== 'visible' || Number(style.opacity) === 0 ||
-        document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) !== node) throw new Error('Field not visible');
+        document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) !== node) throw new VisibilityError('Field not visible');
     return node;
   }
   function check(message: { taskId: string; observationId: string; target: string }) {
@@ -67,9 +74,10 @@
         if (observation?.taskId === message.taskId) observation = undefined;
         respond({ ok: true });
       }
-    } catch {
+    } catch (e) {
       observation = undefined;
-      respond({ ok: false });
+      // Only ever a fixed literal from this file's own classes, never the caught message.
+      respond({ ok: false, reason: e instanceof VisibilityError ? 'field-not-visible' : undefined });
     }
   });
 })();

@@ -47,6 +47,7 @@ test('invalid field blocks before any upload', async ({ demo }) => {
   await demo.page.getByLabel('Shipping address', { exact: true }).evaluate(node => (node as HTMLInputElement).readOnly = true);
   await demo.popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(demo.popup.getByRole('status')).toContainText('Blocked');
+  await expect(demo.popup.getByRole('status')).toHaveAttribute('data-reason', 'observation-failed');
   expect(demo.requests).toHaveLength(0);
   await expect(demo.page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
@@ -56,6 +57,10 @@ test.describe('failed local vision', () => {
   test('unloadable model causes zero upload', async ({ demo }) => {
     await demo.popup.getByRole('button', { name: 'Run private fill' }).click();
     await expect(demo.popup.getByRole('status')).toHaveText('Blocked: vision, planner or freshness check failed.', { timeout: 30_000 });
+    await expect(demo.popup.getByRole('status')).toHaveAttribute('data-reason', 'vision-failed');
+    // Proves the block happened before/at inference, not via an unrelated observation failure
+    // that never reached the model.
+    await expect(demo.popup.locator('#metrics')).toBeEmpty();
     expect(demo.requests).toHaveLength(0);
     await expect(demo.page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
   });
@@ -69,14 +74,21 @@ for (const [name, change] of [
 ] as const) {
   test(`rejects planner action with ${name}`, async ({ demo }) => {
     let actionDelivered = false;
+    let hits = 0;
     await demo.context.route('**/plan', async route => {
+      hits++;
       const response = await route.fetch();
       await route.fulfill({ response, json: { ...await response.json(), ...change } });
       actionDelivered = true;
     });
     await demo.popup.getByRole('button', { name: 'Run private fill' }).click();
     await expect(demo.popup.getByRole('status')).toContainText('Blocked', { timeout: 30_000 });
+    await expect(demo.popup.getByRole('status')).toHaveAttribute('data-reason', 'planner-action-rejected');
     expect(actionDelivered).toBe(true);
+    expect(hits).toBe(1);
+    // Proves the malicious action actually reached the wire and was rejected downstream of
+    // the fetch, not that the run died before the fetch ever happened.
+    expect(demo.requests).toHaveLength(1);
     await expect(demo.page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
   });
 }
@@ -85,6 +97,7 @@ test('real local vision fills the intended field without planner-channel leakage
   const { page, popup, requests } = demo;
   await popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'success');
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('991 Vault Lane, Testville 00000');
   await expect(popup.locator('#metrics')).toContainText('PP-OCRv4');
   await expect(popup.locator('#metrics')).toContainText('text pixels');
@@ -111,6 +124,7 @@ test('target replacement during delayed planning blocks the fill', async ({ demo
   });
   await popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(popup.getByRole('status')).toContainText('Blocked', { timeout: 30_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'stale-observation');
   expect(replaced).toBe(true);
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
@@ -132,6 +146,7 @@ test('cancellation while the planner is pending prevents execution', async ({ de
   await popup.getByRole('button', { name: 'Cancel', exact: true }).click();
   release();
   await expect(popup.getByRole('status')).toHaveText('Cancelled. Task cleared.');
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'cancelled');
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
 
@@ -150,6 +165,7 @@ test('a replayed response cannot fill a new task', async ({ demo }) => {
   await page.getByLabel('Shipping address', { exact: true }).fill('');
   await popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(popup.getByRole('status')).toContainText('Blocked', { timeout: 30_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'planner-action-rejected');
   expect(delivered).toBe(2);
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
@@ -165,6 +181,7 @@ test('navigation while planning clears the old destination', async ({ demo, base
   });
   await popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(popup.getByRole('status')).toHaveText('Blocked: page navigated. Task cleared.', { timeout: 30_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'navigated');
   await expect(page).toHaveURL(`${baseURL}/fixture?new-document`);
   expect(navigated).toBe(true);
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
