@@ -1,0 +1,37 @@
+{
+  "fixture": "ambiguous-tuning-02",
+  "set": "tuning",
+  "primaryCategory": "ambiguous",
+  "hardNegative": true,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "ambiguous",
+      "text": "The Old Mill Bakery, Founded 1958",
+      "multiline": false,
+      "note": "address-shaped business description, no deliverable address",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 246.484375,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 246.484375,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

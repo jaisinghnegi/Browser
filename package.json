@@ -11,7 +11,8 @@
     "test": "vitest run",
     "pretest": "node scripts/generate-contract.mjs",
     "test:e2e": "playwright test",
-    "model:download": "node scripts/download-model.mjs"
+    "model:download": "node scripts/download-model.mjs",
+    "phase2:fixtures": "node scripts/build-phase2-manifest.mjs && node scripts/generate-phase2-fixtures.mjs && node scripts/measure-phase2-fixtures.mjs && node scripts/freeze-phase2-split.mjs"
   },
   "dependencies": {
     "ajv": "8.20.0",

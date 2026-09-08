@@ -1,0 +1,36 @@
+{
+  "fixture": "benign-tuning-00",
+  "set": "tuning",
+  "primaryCategory": "benign",
+  "hardNegative": false,
+  "benign": true,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": true,
+  "regions": [
+    {
+      "category": "benign",
+      "text": "Your order has shipped and will arrive within 3-5 business days.",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 445.015625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 445.015625,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "fixture": "email-holdout-08",
+  "set": "holdout",
+  "primaryCategory": "email",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "email",
+      "text": "ishita.bose8@example-mail-8.test",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 238.3125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 238.3125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "fixture": "address-tuning-02",
+  "set": "tuning",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [
+    "tiny"
+  ],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 10,
+  "task": false,
+  "regions": [
+    {
+      "category": "name-in-address",
+      "text": "Ananya Iyer",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 51.734375,
+        "height": 14
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 51.734375,
+          "height": 14
+        }
+      ]
+    },
+    {
+      "category": "address",
+      "text": "114 Harbor Walk, Rivergate 22223",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 50,
+        "width": 150.0625,
+        "height": 14
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 50,
+          "width": 150.0625,
+          "height": 14
+        }
+      ]
+    }
+  ]
+}

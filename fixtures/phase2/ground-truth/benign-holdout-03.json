@@ -1,0 +1,36 @@
+{
+  "fixture": "benign-holdout-03",
+  "set": "holdout",
+  "primaryCategory": "benign",
+  "hardNegative": false,
+  "benign": true,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": true,
+  "regions": [
+    {
+      "category": "benign",
+      "text": "Free returns within 30 days of delivery.",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 271.140625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 271.140625,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

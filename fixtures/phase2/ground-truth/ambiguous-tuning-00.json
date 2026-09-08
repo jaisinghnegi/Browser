@@ -1,0 +1,37 @@
+{
+  "fixture": "ambiguous-tuning-00",
+  "set": "tuning",
+  "primaryCategory": "ambiguous",
+  "hardNegative": true,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "ambiguous",
+      "text": "Order #9876543210",
+      "multiline": false,
+      "note": "10-digit order id, phone-shaped",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 141.0625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 141.0625,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

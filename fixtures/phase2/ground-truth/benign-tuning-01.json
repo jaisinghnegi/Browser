@@ -1,0 +1,36 @@
+{
+  "fixture": "benign-tuning-01",
+  "set": "tuning",
+  "primaryCategory": "benign",
+  "hardNegative": false,
+  "benign": true,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": true,
+  "regions": [
+    {
+      "category": "benign",
+      "text": "Thank you for subscribing to our newsletter.",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 310.671875,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 310.671875,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

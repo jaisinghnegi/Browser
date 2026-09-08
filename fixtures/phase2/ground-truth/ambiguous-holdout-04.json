@@ -1,0 +1,37 @@
+{
+  "fixture": "ambiguous-holdout-04",
+  "set": "holdout",
+  "primaryCategory": "ambiguous",
+  "hardNegative": true,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "ambiguous",
+      "text": "@sample_user posted a review",
+      "multiline": false,
+      "note": "social handle, email-shaped @ sigil",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 217.53125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 217.53125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

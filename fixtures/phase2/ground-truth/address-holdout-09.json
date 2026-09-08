@@ -1,0 +1,42 @@
+{
+  "fixture": "address-holdout-09",
+  "set": "holdout",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "address",
+      "text": "Flat 163, Koramangala, Bengaluru\n560034",
+      "multiline": true,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 235.4375,
+        "height": 42
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 235.4375,
+          "height": 21
+        },
+        {
+          "x": 24,
+          "y": 45,
+          "width": 51.75,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

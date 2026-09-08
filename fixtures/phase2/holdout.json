@@ -1,0 +1,159 @@
+{
+  "set": "holdout",
+  "frozenAt": "commit that introduces this file",
+  "count": 19,
+  "fixtures": [
+    {
+      "id": "address-holdout-06",
+      "primaryCategory": "address",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "5669443bced2d1d1de7b6a0d36cf0960b7720d06def56b7c76df7ad30d8a100e",
+      "groundTruthSha256": "b13249a22064d59af438343e3382d02ecfc728122d3d3336d7ff2a38fe1dee55"
+    },
+    {
+      "id": "address-holdout-07",
+      "primaryCategory": "address",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "64d0837a23946490ce1531d5d6a68a16eac00dab92edee47b421738d1921aa81",
+      "groundTruthSha256": "05171db3092f1cd7dd7023d23555012e613c71e1bdb4a89999ce871adefab1a0"
+    },
+    {
+      "id": "address-holdout-08",
+      "primaryCategory": "address",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "816321ac421ebce6767d4faaf28d88cbebdaa457428d72b7fccb4b5de9addf8f",
+      "groundTruthSha256": "515f58780c20673221ce01da9a718dcd62546a71aeee58ead5b2d0e69d8bb94d"
+    },
+    {
+      "id": "address-holdout-09",
+      "primaryCategory": "address",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "64edfad83b52f119936eb83b867d6d24233321bf0362ece790f5378e656b8ffd",
+      "groundTruthSha256": "733842b1bd95011519902bbf25bf14434c8c20bb8c1322abf4d5d7d1dc5b5290"
+    },
+    {
+      "id": "phone-holdout-06",
+      "primaryCategory": "phone",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "2cbd466ddb1f769a8177d3a33857b6f27454470eb773d91426a0eab143f1dbd9",
+      "groundTruthSha256": "9939bf331eee7accad3eb7d9b1287814195a954d2b8a9d19c3d5ca987e2d8e86"
+    },
+    {
+      "id": "phone-holdout-07",
+      "primaryCategory": "phone",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "b6181829822548672056104f13d614aeecb0046fe8d0ec0934bb6dca1484a1db",
+      "groundTruthSha256": "368db2fca9e793bc404138c5bd10d0f525c44c5be39acf7b04749ede5d709491"
+    },
+    {
+      "id": "phone-holdout-08",
+      "primaryCategory": "phone",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "f895d3ddac816fc8e2d9910b8e865fae6c1390e98f459320812e015cec906f91",
+      "groundTruthSha256": "9626f34241eb7f8323b42c9a2fca190c64d3968b4976aeaafe6b5b0161b8bd46"
+    },
+    {
+      "id": "phone-holdout-09",
+      "primaryCategory": "phone",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "a0f0cf2208f2f8dfacf6e4283b6976b0f4f7e83abbf6a30e699a10a14aa319a6",
+      "groundTruthSha256": "caf0e039b5c227d9ab4395cdbb5e77589ef05314994ec43d88c3384f3f4d5ec1"
+    },
+    {
+      "id": "email-holdout-06",
+      "primaryCategory": "email",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "04a32fd1e3a714ccc783e73cadf487291706c2ffda99b2557c9573d77b2cff9f",
+      "groundTruthSha256": "6d016086a4ef98784a50f5b929fff8b6860e6ab6bdf85b233812f9047bd75e9d"
+    },
+    {
+      "id": "email-holdout-07",
+      "primaryCategory": "email",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "87243c7070e75df09e85270f33d747ec5978af2a20896d2bdcc9c960f7012c50",
+      "groundTruthSha256": "34cb7eecc9fbe927a438d2df1b8c48250b041b5eafbea56283ff73d00b9efdc2"
+    },
+    {
+      "id": "email-holdout-08",
+      "primaryCategory": "email",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "4bb02bf520b772103aaa9cbf5d56c8fc13fab9d01493d1be06d316a71b2bb43d",
+      "groundTruthSha256": "57dc33791a6bb7b2245378809471543304c4cdcb1f8e5807c3f2a9eb1e928628"
+    },
+    {
+      "id": "email-holdout-09",
+      "primaryCategory": "email",
+      "hardNegative": false,
+      "benign": false,
+      "htmlSha256": "af316a483c006003bcf73b6066cd26d9d72a32426af17033c82e882a81c36377",
+      "groundTruthSha256": "c28c5e02b530eb2e536e8033d40e1d695d49cf65b3a84855bc9ac6ca73aadd59"
+    },
+    {
+      "id": "ambiguous-holdout-04",
+      "primaryCategory": "ambiguous",
+      "hardNegative": true,
+      "benign": false,
+      "htmlSha256": "e09bdcd298caa62546f6b163b75864edbf911f059cec0625a0687ccb8121138c",
+      "groundTruthSha256": "09da2d98ff32d0b29483cf54d5ea323dde27fd0f36dba19c9215105b42e6bd36"
+    },
+    {
+      "id": "ambiguous-holdout-05",
+      "primaryCategory": "ambiguous",
+      "hardNegative": true,
+      "benign": false,
+      "htmlSha256": "3f05eb2f26830cd3639d5c045eb388892e6601fd9ec09783ce7da22205ea3f1f",
+      "groundTruthSha256": "946379b391ae91ac19ba7655da58839114630776e7c811612f01520c2aff66de"
+    },
+    {
+      "id": "ambiguous-holdout-06",
+      "primaryCategory": "ambiguous",
+      "hardNegative": true,
+      "benign": false,
+      "htmlSha256": "9d7b9437f4d4d4b93362bb092b9242d4137eb4da6150fcb56f0a64abf9c2a130",
+      "groundTruthSha256": "38383a16080e9427ff3c9a4c8b56947130d98a29bfb60aa5fbc9b652794ee86b"
+    },
+    {
+      "id": "ambiguous-holdout-07",
+      "primaryCategory": "ambiguous",
+      "hardNegative": true,
+      "benign": false,
+      "htmlSha256": "3cac0c8feaf36e48ab9b0bf61324895eae066ec3399900e5e96bf282599e83ff",
+      "groundTruthSha256": "1f2c0a3fb042e9654c4fb302c4e8264c376e736de65e60495e2ab53b9b924559"
+    },
+    {
+      "id": "benign-holdout-03",
+      "primaryCategory": "benign",
+      "hardNegative": false,
+      "benign": true,
+      "htmlSha256": "7aa39f0eb00acd9a8da1f20a3901501966be263be63bf4865547e257467b25e3",
+      "groundTruthSha256": "ad0475126b36715d92052840597f1169878fa7425f315baf1d6693416ca0408a"
+    },
+    {
+      "id": "benign-holdout-04",
+      "primaryCategory": "benign",
+      "hardNegative": false,
+      "benign": true,
+      "htmlSha256": "fb3cb2411a0efbdd63db80ecce9d3dab076f6801fb63d57292bbe1a1a8574060",
+      "groundTruthSha256": "140e2e0326bbc82d933067d1375f15a72a0105bc77bae3ea948edb2306216cd7"
+    },
+    {
+      "id": "benign-holdout-05",
+      "primaryCategory": "benign",
+      "hardNegative": false,
+      "benign": true,
+      "htmlSha256": "3242c22048cd33752b365864c8aab45ed09ae3abed7bcefa3530de7a05e993e1",
+      "groundTruthSha256": "2630afc491c15ec0ae78fdd002aae295fb749a374aeeec1ca17187920995c7f4"
+    }
+  ]
+}

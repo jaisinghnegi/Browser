@@ -1,0 +1,42 @@
+{
+  "fixture": "address-tuning-05",
+  "set": "tuning",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "address",
+      "text": "135 Marigold Street\nOakmoor, ST 55556",
+      "multiline": true,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 139.8125,
+        "height": 42
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 139.8125,
+          "height": 21
+        },
+        {
+          "x": 24,
+          "y": 45,
+          "width": 138.5,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

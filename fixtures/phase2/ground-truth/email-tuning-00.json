@@ -1,0 +1,76 @@
+{
+  "fixture": "email-tuning-00",
+  "set": "tuning",
+  "primaryCategory": "email",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [
+    "mixed"
+  ],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "email",
+      "text": "priya.sharma0@example-mail-0.test",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 253.421875,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 253.421875,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "address",
+      "text": "240 Vault Lane, Testville 00001",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 213.40625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 213.40625,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "phone",
+      "text": "+91 9953086420",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 90,
+        "width": 118.828125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 90,
+          "width": 118.828125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

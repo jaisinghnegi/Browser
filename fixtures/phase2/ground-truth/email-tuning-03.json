@@ -1,0 +1,57 @@
+{
+  "fixture": "email-tuning-03",
+  "set": "tuning",
+  "primaryCategory": "email",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "email",
+      "text": "karan.mehta3@",
+      "multiline": false,
+      "note": "local-part fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 111,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 111,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "email",
+      "text": "testcorp-3.test",
+      "multiline": false,
+      "note": "domain fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 102.234375,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 102.234375,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

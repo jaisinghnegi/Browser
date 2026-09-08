@@ -1,0 +1,36 @@
+{
+  "fixture": "benign-tuning-02",
+  "set": "tuning",
+  "primaryCategory": "benign",
+  "hardNegative": false,
+  "benign": true,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": true,
+  "regions": [
+    {
+      "category": "benign",
+      "text": "This product is made from 100% recycled materials.",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 363.03125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 363.03125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

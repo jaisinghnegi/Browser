@@ -1,0 +1,59 @@
+{
+  "fixture": "phone-tuning-05",
+  "set": "tuning",
+  "primaryCategory": "phone",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [
+    "split"
+  ],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "phone",
+      "text": "95382",
+      "multiline": false,
+      "note": "first fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 43.125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 43.125,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "phone",
+      "text": "71605",
+      "multiline": false,
+      "note": "second fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 43.125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 43.125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

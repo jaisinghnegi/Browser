@@ -1,0 +1,59 @@
+{
+  "fixture": "phone-holdout-09",
+  "set": "holdout",
+  "primaryCategory": "phone",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [
+    "split"
+  ],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "phone",
+      "text": "98888",
+      "multiline": false,
+      "note": "first fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 43.125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 43.125,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "phone",
+      "text": "-88889",
+      "multiline": false,
+      "note": "second fragment, split across elements",
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 49.53125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 49.53125,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

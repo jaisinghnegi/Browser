@@ -1,0 +1,1053 @@
+[
+  {
+    "id": "address-tuning-00",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "name-in-address",
+        "text": "Priya Sharma",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "Flat 100, Andheri, Mumbai - 400058",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-tuning-01",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "address",
+        "text": "107 Cedar Court\nSample City, ST 11112",
+        "multiline": true
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-tuning-02",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "name-in-address",
+        "text": "Ananya Iyer",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "114 Harbor Walk, Rivergate 22223",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "tiny"
+    ],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 10,
+    "task": false
+  },
+  {
+    "id": "address-tuning-03",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "address",
+        "text": "Flat 121, Sector 62, Noida - 201309",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-tuning-04",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "name-in-address",
+        "text": "Divya Nair",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "128 Birchgate Road, Fernbrook 44445",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-tuning-05",
+    "set": "tuning",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "address",
+        "text": "135 Marigold Street\nOakmoor, ST 55556",
+        "multiline": true
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-holdout-06",
+    "set": "holdout",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "name-in-address",
+        "text": "Meera Pillai",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "Flat 142, Salt Lake, Kolkata - 700064",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-holdout-07",
+    "set": "holdout",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "address",
+        "text": "149 Willowmere Ave, Ashcombe 77778",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-holdout-08",
+    "set": "holdout",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "name-in-address",
+        "text": "Ishita Bose",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "156 Foxglove Terrace, Bellcross 88889",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "nonSquareDPR"
+    ],
+    "referenceViewport": {
+      "width": 900,
+      "height": 1200,
+      "devicePixelRatio": 1.5
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "address-holdout-09",
+    "set": "holdout",
+    "primaryCategory": "address",
+    "regions": [
+      {
+        "category": "address",
+        "text": "Flat 163, Koramangala, Bengaluru\n560034",
+        "multiline": true
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-00",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "9100000000",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-01",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "+91 9187654321",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-02",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "+919275308642",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-03",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "09362962963",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-04",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "94506-17284",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-tuning-05",
+    "set": "tuning",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "95382",
+        "multiline": false,
+        "note": "first fragment, split across elements"
+      },
+      {
+        "category": "phone",
+        "text": "71605",
+        "multiline": false,
+        "note": "second fragment, split across elements"
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "split"
+    ],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-holdout-06",
+    "set": "holdout",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "+91 9625925926",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-holdout-07",
+    "set": "holdout",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "+919713580247",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-holdout-08",
+    "set": "holdout",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "09801234568",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "phone-holdout-09",
+    "set": "holdout",
+    "primaryCategory": "phone",
+    "regions": [
+      {
+        "category": "phone",
+        "text": "98888",
+        "multiline": false,
+        "note": "first fragment, split across elements"
+      },
+      {
+        "category": "phone",
+        "text": "-88889",
+        "multiline": false,
+        "note": "second fragment, split across elements"
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "split"
+    ],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-tuning-00",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "priya.sharma0@example-mail-0.test",
+        "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "240 Vault Lane, Testville 00001",
+        "multiline": false
+      },
+      {
+        "category": "phone",
+        "text": "+91 9953086420",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "mixed"
+    ],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-tuning-01",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "rohan.verma1@sample-inbox-1.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-tuning-02",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "ananya.iyer2@mockdomain-2.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-tuning-03",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "karan.mehta3@",
+        "multiline": false,
+        "note": "local-part fragment, split across elements"
+      },
+      {
+        "category": "email",
+        "text": "testcorp-3.test",
+        "multiline": false,
+        "note": "domain fragment, split across elements"
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-tuning-04",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "divya.nair4@example-mail-4.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [
+      "tiny"
+    ],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 10,
+    "task": false
+  },
+  {
+    "id": "email-tuning-05",
+    "set": "tuning",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "arjun.rao5@sample-inbox-5.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-holdout-06",
+    "set": "holdout",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "meera.pillai6@mockdomain-6.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-holdout-07",
+    "set": "holdout",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "vikram.shah7@",
+        "multiline": false,
+        "note": "local-part fragment, split across elements"
+      },
+      {
+        "category": "email",
+        "text": "testcorp-7.test",
+        "multiline": false,
+        "note": "domain fragment, split across elements"
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-holdout-08",
+    "set": "holdout",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "ishita.bose8@example-mail-8.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "email-holdout-09",
+    "set": "holdout",
+    "primaryCategory": "email",
+    "regions": [
+      {
+        "category": "email",
+        "text": "aditya.kulkarni9@sample-inbox-9.test",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-tuning-00",
+    "set": "tuning",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Order #9876543210",
+        "multiline": false,
+        "note": "10-digit order id, phone-shaped"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-tuning-01",
+    "set": "tuning",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Ref No. 4455667788",
+        "multiline": false,
+        "note": "10-digit reference number, phone-shaped"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-tuning-02",
+    "set": "tuning",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "The Old Mill Bakery, Founded 1958",
+        "multiline": false,
+        "note": "address-shaped business description, no deliverable address"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-tuning-03",
+    "set": "tuning",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Riverside Bookstore & Cafe",
+        "multiline": false,
+        "note": "address-shaped business name"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-holdout-04",
+    "set": "holdout",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "@sample_user posted a review",
+        "multiline": false,
+        "note": "social handle, email-shaped @ sigil"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-holdout-05",
+    "set": "holdout",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Contact @support_desk for help",
+        "multiline": false,
+        "note": "social handle, email-shaped @ sigil"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-holdout-06",
+    "set": "holdout",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Total: 411045 items in stock",
+        "multiline": false,
+        "note": "postal-code-shaped number, quantity context"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "ambiguous-holdout-07",
+    "set": "holdout",
+    "primaryCategory": "ambiguous",
+    "regions": [
+      {
+        "category": "ambiguous",
+        "text": "Invoice total ₹ 560034.00",
+        "multiline": false,
+        "note": "postal-code-shaped number, price context"
+      }
+    ],
+    "hardNegative": true,
+    "benign": false,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": false
+  },
+  {
+    "id": "benign-tuning-00",
+    "set": "tuning",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "Your order has shipped and will arrive within 3-5 business days.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  },
+  {
+    "id": "benign-tuning-01",
+    "set": "tuning",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "Thank you for subscribing to our newsletter.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  },
+  {
+    "id": "benign-tuning-02",
+    "set": "tuning",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "This product is made from 100% recycled materials.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  },
+  {
+    "id": "benign-holdout-03",
+    "set": "holdout",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "Free returns within 30 days of delivery.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  },
+  {
+    "id": "benign-holdout-04",
+    "set": "holdout",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "Our support team is available Monday through Friday.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  },
+  {
+    "id": "benign-holdout-05",
+    "set": "holdout",
+    "primaryCategory": "benign",
+    "regions": [
+      {
+        "category": "benign",
+        "text": "Battery life: up to 12 hours on a single charge.",
+        "multiline": false
+      }
+    ],
+    "hardNegative": false,
+    "benign": true,
+    "tags": [],
+    "referenceViewport": {
+      "width": 1000,
+      "height": 800,
+      "devicePixelRatio": 1
+    },
+    "fontPx": 16,
+    "task": true
+  }
+]

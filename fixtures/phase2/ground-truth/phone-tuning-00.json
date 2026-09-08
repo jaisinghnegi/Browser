@@ -1,0 +1,36 @@
+{
+  "fixture": "phone-tuning-00",
+  "set": "tuning",
+  "primaryCategory": "phone",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "phone",
+      "text": "9100000000",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 86.25,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 86.25,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

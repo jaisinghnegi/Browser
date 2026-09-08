@@ -1,0 +1,55 @@
+{
+  "fixture": "address-tuning-00",
+  "set": "tuning",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "name-in-address",
+      "text": "Priya Sharma",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 91.84375,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 91.84375,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "address",
+      "text": "Flat 100, Andheri, Mumbai - 400058",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 252.40625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 252.40625,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

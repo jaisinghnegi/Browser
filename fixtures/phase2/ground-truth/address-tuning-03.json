@@ -1,0 +1,36 @@
+{
+  "fixture": "address-tuning-03",
+  "set": "tuning",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "address",
+      "text": "Flat 121, Sector 62, Noida - 201309",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 247.15625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 247.15625,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

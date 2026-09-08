@@ -1,0 +1,36 @@
+{
+  "fixture": "phone-holdout-08",
+  "set": "holdout",
+  "primaryCategory": "phone",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "phone",
+      "text": "09801234568",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 94.875,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 94.875,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

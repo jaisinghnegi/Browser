@@ -1,0 +1,36 @@
+{
+  "fixture": "address-holdout-07",
+  "set": "holdout",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "address",
+      "text": "149 Willowmere Ave, Ashcombe 77778",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 274.109375,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 274.109375,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "fixture": "ambiguous-holdout-05",
+  "set": "holdout",
+  "primaryCategory": "ambiguous",
+  "hardNegative": true,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "ambiguous",
+      "text": "Contact @support_desk for help",
+      "multiline": false,
+      "note": "social handle, email-shaped @ sigil",
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 227.984375,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 227.984375,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}

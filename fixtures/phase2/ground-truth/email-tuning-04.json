@@ -1,0 +1,38 @@
+{
+  "fixture": "email-tuning-04",
+  "set": "tuning",
+  "primaryCategory": "email",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [
+    "tiny"
+  ],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 10,
+  "task": false,
+  "regions": [
+    {
+      "category": "email",
+      "text": "divya.nair4@example-mail-4.test",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 144.1875,
+        "height": 14
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 144.1875,
+          "height": 14
+        }
+      ]
+    }
+  ]
+}

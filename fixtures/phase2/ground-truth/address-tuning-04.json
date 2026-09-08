@@ -1,0 +1,55 @@
+{
+  "fixture": "address-tuning-04",
+  "set": "tuning",
+  "primaryCategory": "address",
+  "hardNegative": false,
+  "benign": false,
+  "tags": [],
+  "referenceViewport": {
+    "width": 1000,
+    "height": 800,
+    "devicePixelRatio": 1
+  },
+  "fontPx": 16,
+  "task": false,
+  "regions": [
+    {
+      "category": "name-in-address",
+      "text": "Divya Nair",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 24,
+        "width": 72.578125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 24,
+          "width": 72.578125,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "address",
+      "text": "128 Birchgate Road, Fernbrook 44445",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 264.921875,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 264.921875,
+          "height": 21
+        }
+      ]
+    }
+  ]
+}
