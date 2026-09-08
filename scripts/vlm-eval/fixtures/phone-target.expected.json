@@ -7,7 +7,7 @@
   "candidates": [
     {
       "label": "Phone number",
-      "targetRef": "target-phone-target-1",
+      "targetRef": "44d1f99e-07c7-4c19-aeb3-0693a09680b7",
       "allowedValueRefs": [
         "PHONE_1"
       ]

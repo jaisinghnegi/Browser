@@ -7,7 +7,7 @@
   "candidates": [
     {
       "label": "Shipping address",
-      "targetRef": "target-address-target-1",
+      "targetRef": "d4d916fa-ec34-4915-b157-37937ae6aca0",
       "allowedValueRefs": [
         "ADDRESS_1"
       ]

@@ -7,21 +7,21 @@
   "candidates": [
     {
       "label": "Address",
-      "targetRef": "target-dense-multi-target-address",
+      "targetRef": "4f49800d-22eb-4954-97a4-fec6400acd0e",
       "allowedValueRefs": [
         "ADDRESS_1"
       ]
     },
     {
       "label": "Phone number",
-      "targetRef": "target-dense-multi-target-phone",
+      "targetRef": "fa25330f-9eb8-4e2c-bec6-5c4d81062bf1",
       "allowedValueRefs": [
         "PHONE_1"
       ]
     },
     {
       "label": "Email address",
-      "targetRef": "target-dense-multi-target-email",
+      "targetRef": "787dfdfd-4a95-48d5-a9da-64a84abf0556",
       "allowedValueRefs": [
         "EMAIL_1"
       ]

@@ -7,14 +7,14 @@
   "candidates": [
     {
       "label": "Address",
-      "targetRef": "target-duplicate-label-billing",
+      "targetRef": "b5fbf010-f6fe-456d-a2bf-ccf71847252a",
       "allowedValueRefs": [
         "ADDRESS_1"
       ]
     },
     {
       "label": "Address",
-      "targetRef": "target-duplicate-label-shipping",
+      "targetRef": "9180e275-40ed-482c-823d-854431f34d2f",
       "allowedValueRefs": [
         "ADDRESS_2"
       ]

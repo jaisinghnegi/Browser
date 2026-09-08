@@ -11,18 +11,24 @@ trusted value from that candidate, never anything the model invented.
 from __future__ import annotations
 
 import json
-from typing import Literal, Union
+from typing import Annotated, Literal, Union
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+from server.models import Id
 
 _CLOSED_KEYS = frozenset({'action', 'target', 'valueRef'})
+# Matches the bounded reference vocabulary this prototype's protocol actually uses
+# (server/models.py's FillAction.valueRef) -- a candidate can never authorize an arbitrary
+# string as a valueRef, only one from this fixed set.
+_VALUE_REF = Annotated[str, Field(pattern=r'^[A-Z][A-Z0-9_]*_\d+$')]
 
 
 class Candidate(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    label: str
-    target_ref: str
-    allowed_value_refs: list[str]
+    label: Annotated[str, Field(min_length=1, max_length=200)]
+    target_ref: Id
+    allowed_value_refs: Annotated[list[_VALUE_REF], Field(min_length=1)]
 
 
 class ResolvedFill(BaseModel):

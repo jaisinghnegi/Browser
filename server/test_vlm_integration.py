@@ -18,7 +18,7 @@ from server.vlm_adapter import Candidate, ResolvedAbstain, ResolvedFill, Rejecte
 from server.vlm_client import VlmUnavailable, plan_with_vlm
 from server.vlm_dev_runner import ALLOWED_FIXTURE_IDS, run_fixture
 
-CANDIDATES = [Candidate(label='Shipping address', target_ref='target-uuid-1', allowed_value_refs=['ADDRESS_1'])]
+CANDIDATES = [Candidate(label='Shipping address', target_ref='9b218ba3-aa95-4697-a895-ff25d568ca25', allowed_value_refs=['ADDRESS_1'])]
 DUMMY_IMAGE = 'data:image/png;base64,aGVsbG8='
 
 
@@ -88,7 +88,7 @@ async def test_correct_fill_resolves_through_adapter(monkeypatch):
         return httpx.Response(200, json={'choices': [{'message': {'content': content}}]})
     _client_with_transport(httpx.MockTransport(handler), monkeypatch)
     raw = await plan_with_vlm(base_url='http://x', system_prompt='s', user_prompt='u', image_data_url=DUMMY_IMAGE)
-    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='target-uuid-1', value_ref='ADDRESS_1')
+    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='9b218ba3-aa95-4697-a895-ff25d568ca25', value_ref='ADDRESS_1')
 
 
 @pytest.mark.anyio
@@ -118,8 +118,8 @@ async def test_ambiguous_target_label_rejected_by_adapter(monkeypatch):
         return httpx.Response(200, json={'choices': [{'message': {'content': content}}]})
     _client_with_transport(httpx.MockTransport(handler), monkeypatch)
     dup = [
-        Candidate(label='Address', target_ref='a', allowed_value_refs=['ADDRESS_1']),
-        Candidate(label='Address', target_ref='b', allowed_value_refs=['ADDRESS_2']),
+        Candidate(label='Address', target_ref='ae7d5cba-cfa1-43cf-96eb-00bc0bec382f', allowed_value_refs=['ADDRESS_1']),
+        Candidate(label='Address', target_ref='d038ae3a-6cea-4c30-a0b3-af43b4dfbfdd', allowed_value_refs=['ADDRESS_2']),
     ]
     raw = await plan_with_vlm(base_url='http://x', system_prompt='s', user_prompt='u', image_data_url=DUMMY_IMAGE)
     assert resolve_action(raw, dup) == Rejected(reason='ambiguous-target-label')
@@ -137,18 +137,28 @@ async def test_extra_field_in_model_json_rejected_by_adapter(monkeypatch):
 
 @pytest.mark.anyio
 async def test_real_smoke_against_running_llama_server():
-    """Self-skips unless a real llama-server is actually listening on 127.0.0.1:8973 -- that
-    runtime/model (~3.6GB) is a personal-machine artifact, never installed in CI. When it is
-    running, this proves the *Python* adapter/client chain against the real model, not just
-    the Node harness in scripts/vlm-eval/."""
+    """Self-skips only when nothing is listening on 127.0.0.1:8973 at all -- that
+    runtime/model (~3.6GB) is a personal-machine artifact, never installed in CI. If something
+    IS listening there but answers unhealthily or is serving the wrong model, this must FAIL,
+    not silently skip -- a skip is for "the optional runtime isn't installed", never a way to
+    hide "the server is present but broken" or "the wrong model got loaded"."""
     base_url = 'http://127.0.0.1:8973'
     try:
         async with httpx.AsyncClient(timeout=2.0, trust_env=False) as client:
             health = await client.get(f'{base_url}/health')
-        if health.status_code != 200:
-            pytest.skip('no local llama-server answering health on 8973')
-    except httpx.HTTPError:
-        pytest.skip('no local llama-server answering health on 8973')
+    except httpx.TransportError:
+        # No response was ever received at all (connection refused, timed out establishing a
+        # connection, etc.) -- the optional runtime genuinely isn't there. Anything that DID
+        # get a response, even an unhealthy one, falls through to the asserts below and fails.
+        pytest.skip('no local llama-server listening on 8973 (optional runtime not installed)')
+    assert health.status_code == 200, f'llama-server on 8973 answered but is unhealthy: {health.status_code} {health.text}'
+
+    async with httpx.AsyncClient(timeout=5.0, trust_env=False) as client:
+        props = await client.get(f'{base_url}/props')
+    loaded_model_path = props.json().get('model_path') or props.json().get('default_generation_settings', {}).get('model')
+    assert loaded_model_path and 'Qwen3VL-4B-Instruct-Q4_K_M' in loaded_model_path, (
+        f'llama-server on 8973 is running but not serving the expected model: {loaded_model_path!r}'
+    )
 
     for fixture_id in sorted(ALLOWED_FIXTURE_IDS):
         result = await run_fixture(fixture_id, base_url)

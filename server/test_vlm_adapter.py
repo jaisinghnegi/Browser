@@ -3,19 +3,19 @@ held to the same test vectors so they can't silently drift apart. No network, no
 from server.vlm_adapter import Candidate, ResolvedAbstain, ResolvedFill, Rejected, resolve_action
 
 CANDIDATES = [
-    Candidate(label='Shipping address', target_ref='target-uuid-1', allowed_value_refs=['ADDRESS_1']),
-    Candidate(label='Phone number', target_ref='target-uuid-2', allowed_value_refs=['PHONE_1']),
+    Candidate(label='Shipping address', target_ref='9b218ba3-aa95-4697-a895-ff25d568ca25', allowed_value_refs=['ADDRESS_1']),
+    Candidate(label='Phone number', target_ref='5b7c797e-dc4f-4d6d-8e05-33eb6c06e9b0', allowed_value_refs=['PHONE_1']),
 ]
 
 
 def test_resolves_fill_to_trusted_target_ref():
     raw = '{"action":"fill","target":"Shipping address","valueRef":"ADDRESS_1"}'
-    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='target-uuid-1', value_ref='ADDRESS_1')
+    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='9b218ba3-aa95-4697-a895-ff25d568ca25', value_ref='ADDRESS_1')
 
 
 def test_matches_labels_case_insensitively_and_trims_whitespace():
     raw = '{"action":"fill","target":"  phone NUMBER  ","valueRef":"PHONE_1"}'
-    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='target-uuid-2', value_ref='PHONE_1')
+    assert resolve_action(raw, CANDIDATES) == ResolvedFill(target_ref='5b7c797e-dc4f-4d6d-8e05-33eb6c06e9b0', value_ref='PHONE_1')
 
 
 def test_resolves_abstain_with_no_candidates_needed():
@@ -29,8 +29,8 @@ def test_rejects_unknown_target_label():
 
 def test_rejects_ambiguous_label_matching_more_than_one_candidate():
     dup = [
-        Candidate(label='Address', target_ref='target-uuid-a', allowed_value_refs=['ADDRESS_1']),
-        Candidate(label='Address', target_ref='target-uuid-b', allowed_value_refs=['ADDRESS_2']),
+        Candidate(label='Address', target_ref='ae7d5cba-cfa1-43cf-96eb-00bc0bec382f', allowed_value_refs=['ADDRESS_1']),
+        Candidate(label='Address', target_ref='d038ae3a-6cea-4c30-a0b3-af43b4dfbfdd', allowed_value_refs=['ADDRESS_2']),
     ]
     raw = '{"action":"fill","target":"Address","valueRef":"ADDRESS_1"}'
     assert resolve_action(raw, dup) == Rejected(reason='ambiguous-target-label')
