@@ -1,4 +1,5 @@
 // Runs only in Chrome's isolated content-script world, never in the page world.
+import { FIXTURE_URL } from './config';
 (() => {
   const world = globalThis as typeof globalThis & { privacyAgentInstalled?: boolean };
   if (world.privacyAgentInstalled) return;
@@ -30,7 +31,7 @@
   // typed/bookmarked/pasted. Matches background.ts's normalizeFixtureUrl.
   const normalizedHref = () => location.href.replace(/[?#].*$/, '').replace(/\/$/, '');
   function getField(): HTMLInputElement {
-    if (normalizedHref() !== 'http://localhost:8171/fixture') throw new Error('Unsupported page');
+    if (normalizedHref() !== FIXTURE_URL) throw new Error('Unsupported page');
     const nodes = document.querySelectorAll('#shipping-address');
     const node = nodes[0];
     if (nodes.length !== 1 || !(node instanceof HTMLInputElement) || node.type !== 'text' ||

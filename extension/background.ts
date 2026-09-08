@@ -1,9 +1,8 @@
 import { buildPayload } from './protocol';
 import { Task, type Binding } from './task';
 import { readCapped } from './planner-io';
+import { ORIGIN, FIXTURE_URL as FIXTURE, PLANNER_URL as PLANNER } from './config';
 
-const FIXTURE = 'http://localhost:8171/fixture';
-const PLANNER = 'http://localhost:8171/plan';
 const PLANNER_BODY_LIMIT = 4096;
 // Trims a trailing slash or an accidental ?query/#hash before the exact-match check below --
 // still exactly one allowed path, just tolerant of how a URL can get typed/bookmarked/pasted.
@@ -88,7 +87,7 @@ async function start(run: Run, windowId: number | undefined) {
     const passthrough: Reason[] = ['field-not-visible', 'field-not-empty'];
     fail(passthrough.includes(observed?.reason) ? observed.reason : 'observation-failed', 'Observation failed');
   }
-  if (observed.origin !== 'http://localhost:8171') fail('observation-failed', 'Unsupported observation');
+  if (observed.origin !== ORIGIN) fail('observation-failed', 'Unsupported observation');
   run.binding = { taskId, observationId, target: observed.target, documentId: observed.documentId,
     tabId: tab.id, origin: observed.origin, version: observed.version };
   buildPayload(run.binding); // Validate IDs before starting any capture.
@@ -154,7 +153,7 @@ function reasonOf(e: unknown, fallback: Reason): Reason {
 const STATUS: Record<Reason, string> = {
   success: 'Filled locally. Task cleared.',
   'observation-failed': 'Blocked: capture or observation failed. Open the fixture and retry.',
-  'wrong-tab': 'Blocked: open http://localhost:8171/fixture in this window and make it the active tab, then click Run private fill again.',
+  'wrong-tab': `Blocked: open ${FIXTURE} in this window and make it the active tab, then click Run private fill again.`,
   'permission-needed': "Blocked: couldn't access the tab. Make sure the fixture tab is active, then click the toolbar icon again to reopen this popup and retry.",
   'field-not-visible': 'Blocked: field is not fully visible. Enlarge the window and retry.',
   'field-not-empty': 'Blocked: the field already has a value. Refresh the fixture page and retry.',

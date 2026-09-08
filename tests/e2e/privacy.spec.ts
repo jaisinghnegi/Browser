@@ -6,10 +6,14 @@ type Demo = { context: BrowserContext; page: Page; popup: Page; requests: string
 const test = base.extend<{ demo: Demo; breakModel: boolean }>({
   breakModel: [false, { option: true }],
   demo: async ({ baseURL, breakModel }, use, info) => {
-    let extension = resolve('dist');
+    // Matches playwright.config.ts's E2E_PORT default: an isolated run points both at a
+    // different built extension (BUILD_PORT/BUILD_OUT_DIR at build time) and a different
+    // E2E_EXT_DIR here, so it never touches the shared dist/ a live demo may have loaded.
+    const extDir = process.env.E2E_EXT_DIR || 'dist';
+    let extension = resolve(extDir);
     if (breakModel) {
       extension = info.outputPath('broken-extension');
-      await cp(resolve('dist'), extension, { recursive: true });
+      await cp(resolve(extDir), extension, { recursive: true });
       await writeFile(resolve(extension, 'models/text-detector.onnx'), 'invalid model');
     }
     const context = await chromium.launchPersistentContext('', {
@@ -102,7 +106,7 @@ for (const [name, change] of [
   });
 }
 
-test('real local vision fills the intended field without planner-channel leakage', async ({ demo }, info) => {
+test('real local vision fills the intended field without planner-channel leakage', async ({ demo, baseURL }, info) => {
   const { page, popup, requests } = demo;
   await popup.getByRole('button', { name: 'Run private fill' }).click();
   await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
@@ -112,7 +116,7 @@ test('real local vision fills the intended field without planner-channel leakage
   await expect(popup.locator('#metrics')).toContainText('text pixels');
   expect(requests).toHaveLength(1);
   const request = JSON.parse(requests[0]);
-  expect(request.url).toBe('http://localhost:8171/plan');
+  expect(request.url).toBe(`${baseURL}/plan`);
   const payload = JSON.parse(request.body);
   expect(Object.keys(payload).sort()).toEqual(['fieldKind', 'observationId', 'protocol', 'target', 'taskId', 'valueRef']);
   for (const secret of ['991 Vault Lane', '71 Visible Road', 'Sample City', 'Testville']) {

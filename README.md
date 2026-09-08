@@ -70,7 +70,16 @@ npx.cmd playwright install chromium
 npm.cmd run test:e2e
 ```
 
-Browser tests start/stop their own FastAPI server on 8171. Stop the manual demo server first. They use an isolated Chromium profile, invoke the real extension action to grant `activeTab`, and drive the packaged popup UI in an extension tab because native toolbar popups are not exposed as Playwright pages. Capture, DOM operations, WASM inference and the successful planner request are real. Failure tests replace only the planner's response or corrupt a copied model artifact.
+Browser tests start/stop their own FastAPI server on 8171 by default. Stop the manual demo server first, **or** run fully isolated on a different port without touching a live demo:
+
+```powershell
+npm.cmd run build:e2e-isolated   # builds dist-e2e/ with the planner/CSP port baked in as 8172
+npm.cmd run test:e2e:isolated    # runs its own FastAPI instance on 8172 against dist-e2e/
+```
+
+The port is a build-time-only substitution (`extension/config.ts`, `scripts/build.mjs`'s `BUILD_PORT`/`BUILD_OUT_DIR`) — never read at runtime — so a normal `npm.cmd run build` always produces the fixed-8171 production artifact; only an explicit isolated build/test run uses a different port, in its own output directory, against its own FastAPI instance.
+
+They use an isolated Chromium profile, invoke the real extension action to grant `activeTab`, and drive the packaged popup UI in an extension tab because native toolbar popups are not exposed as Playwright pages. Capture, DOM operations, WASM inference and the successful planner request are real. Failure tests replace only the planner's response or corrupt a copied model artifact.
 
 If Chromium is already installed and download/extraction fails, point the test harness at an existing Chromium executable:
 
