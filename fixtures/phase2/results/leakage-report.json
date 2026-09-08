@@ -1,0 +1,769 @@
+{
+  "results": [
+    {
+      "id": "address-tuning-00",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "name-in-address",
+          "text": "Priya Sharma",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "Flat 100, Andheri, Mumbai - 400058",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-tuning-01",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "address",
+          "text": "107 Cedar Court\nSample City, ST 11112",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-tuning-02",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "name-in-address",
+          "text": "Ananya Iyer",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "114 Harbor Walk, Rivergate 22223",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-tuning-03",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "address",
+          "text": "Flat 121, Sector 62, Noida - 201309",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-tuning-04",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "name-in-address",
+          "text": "Divya Nair",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "128 Birchgate Road, Fernbrook 44445",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-tuning-05",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "address",
+          "text": "135 Marigold Street\nOakmoor, ST 55556",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-holdout-06",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "name-in-address",
+          "text": "Meera Pillai",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "Flat 142, Salt Lake, Kolkata - 700064",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-holdout-07",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "address",
+          "text": "149 Willowmere Ave, Ashcombe 77778",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-holdout-08",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "name-in-address",
+          "text": "Ishita Bose",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "156 Foxglove Terrace, Bellcross 88889",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "address-holdout-09",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "address",
+          "text": "Flat 163, Koramangala, Bengaluru\n560034",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-00",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "9100000000",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-01",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "+91 9187654321",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-02",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "+919275308642",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-03",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "09362962963",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-04",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "94506-17284",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-tuning-05",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "95382",
+          "groupId": "phone-tuning-05-g0",
+          "exposed": false
+        },
+        {
+          "category": "phone",
+          "text": "71605",
+          "groupId": "phone-tuning-05-g0",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-holdout-06",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "+91 9625925926",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-holdout-07",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "+919713580247",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-holdout-08",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "09801234568",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "phone-holdout-09",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "phone",
+          "text": "98888",
+          "groupId": "phone-holdout-09-g0",
+          "exposed": true
+        },
+        {
+          "category": "phone",
+          "text": "-88889",
+          "groupId": "phone-holdout-09-g0",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-00",
+      "outcome": "processed",
+      "maskedRegionCount": 3,
+      "regions": [
+        {
+          "category": "email",
+          "text": "priya.sharma0@example-mail-0.test",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "240 Vault Lane, Testville 00001",
+          "exposed": false
+        },
+        {
+          "category": "phone",
+          "text": "+91 9953086420",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-01",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "rohan.verma1@sample-inbox-1.test",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-02",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "ananya.iyer2@mockdomain-2.test",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-03",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "karan.mehta3@",
+          "groupId": "email-tuning-03-g0",
+          "exposed": false
+        },
+        {
+          "category": "email",
+          "text": "testcorp-3.test",
+          "groupId": "email-tuning-03-g0",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-04",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "divya.nair4@example-mail-4.test",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-tuning-05",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "arjun.rao5@sample-inbox-5.test",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-holdout-06",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "email",
+          "text": "meera.pillai6@mockdomain-6.test",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "email-holdout-07",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "vikram.shah7@",
+          "groupId": "email-holdout-07-g0",
+          "exposed": false
+        },
+        {
+          "category": "email",
+          "text": "testcorp-7.test",
+          "groupId": "email-holdout-07-g0",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-holdout-08",
+      "outcome": "processed",
+      "maskedRegionCount": 3,
+      "regions": [
+        {
+          "category": "email",
+          "text": "ishita.bose8@example-mail-8.test",
+          "exposed": false
+        },
+        {
+          "category": "address",
+          "text": "296 Foxglove Terrace, Bellcross 88889",
+          "exposed": false
+        },
+        {
+          "category": "phone",
+          "text": "+91 9754320988",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "email-holdout-09",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "email",
+          "text": "aditya.kulkarni9@sample-inbox-9.test",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-tuning-00",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Order #9876543210",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-tuning-01",
+      "outcome": "processed",
+      "maskedRegionCount": 1,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Ref No. 4455667788",
+          "exposed": false
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-tuning-02",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "The Old Mill Bakery, Founded 1958",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-tuning-03",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Riverside Bookstore & Cafe",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-holdout-04",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "@sample_user posted a review",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-holdout-05",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Contact @support_desk for help",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-holdout-06",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Total: 411045 items in stock",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-holdout-07",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "ambiguous",
+          "text": "Invoice total ₹ 560034.00",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-tuning-00",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "Your order has shipped and will arrive within 3-5 business days.",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-tuning-01",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "Thank you for subscribing to our newsletter.",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-tuning-02",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "This product is made from 100% recycled materials.",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-holdout-03",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "Free returns within 30 days of delivery.",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-holdout-04",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "Our support team is available Monday through Friday.",
+          "exposed": true
+        }
+      ]
+    },
+    {
+      "id": "benign-holdout-05",
+      "outcome": "processed",
+      "maskedRegionCount": 0,
+      "regions": [
+        {
+          "category": "benign",
+          "text": "Battery life: up to 12 hours on a single charge.",
+          "exposed": true
+        }
+      ]
+    }
+  ],
+  "report": {
+    "totalFixtures": 44,
+    "fixturesProcessed": 44,
+    "fixturesWithheld": 0,
+    "requiredSecretLeakageByCategory": {
+      "name-in-address": {
+        "total": 5,
+        "exposed": 0
+      },
+      "address": {
+        "total": 12,
+        "exposed": 0
+      },
+      "phone": {
+        "total": 14,
+        "exposed": 2
+      },
+      "email": {
+        "total": 12,
+        "exposed": 1
+      }
+    },
+    "requiredSecretLeakageBySet": {
+      "tuning": {
+        "total": 25,
+        "exposed": 0
+      },
+      "holdout": {
+        "total": 18,
+        "exposed": 3
+      }
+    },
+    "overallLeakageFound": true,
+    "ambiguousShapedMaskRate": 0.25,
+    "benignFalsePositiveRate": 0,
+    "leakageByCategoryAllGroups": {
+      "name-in-address": {
+        "total": 5,
+        "exposed": 0
+      },
+      "address": {
+        "total": 12,
+        "exposed": 0
+      },
+      "phone": {
+        "total": 14,
+        "exposed": 2
+      },
+      "email": {
+        "total": 12,
+        "exposed": 1
+      },
+      "ambiguous": {
+        "total": 8,
+        "exposed": 6
+      },
+      "benign": {
+        "total": 6,
+        "exposed": 6
+      }
+    },
+    "leakageBySetAllGroups": {
+      "tuning": {
+        "total": 32,
+        "exposed": 5
+      },
+      "holdout": {
+        "total": 25,
+        "exposed": 10
+      }
+    },
+    "exposedRegionDetails": [
+      {
+        "fixture": "phone-holdout-09",
+        "category": "phone",
+        "text": "98888",
+        "requiredSecret": true
+      },
+      {
+        "fixture": "phone-holdout-09",
+        "category": "phone",
+        "text": "-88889",
+        "requiredSecret": true
+      },
+      {
+        "fixture": "email-holdout-06",
+        "category": "email",
+        "text": "meera.pillai6@mockdomain-6.test",
+        "requiredSecret": true
+      },
+      {
+        "fixture": "ambiguous-tuning-02",
+        "category": "ambiguous",
+        "text": "The Old Mill Bakery, Founded 1958",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "ambiguous-tuning-03",
+        "category": "ambiguous",
+        "text": "Riverside Bookstore & Cafe",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "ambiguous-holdout-04",
+        "category": "ambiguous",
+        "text": "@sample_user posted a review",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "ambiguous-holdout-05",
+        "category": "ambiguous",
+        "text": "Contact @support_desk for help",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "ambiguous-holdout-06",
+        "category": "ambiguous",
+        "text": "Total: 411045 items in stock",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "ambiguous-holdout-07",
+        "category": "ambiguous",
+        "text": "Invoice total ₹ 560034.00",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-tuning-00",
+        "category": "benign",
+        "text": "Your order has shipped and will arrive within 3-5 business days.",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-tuning-01",
+        "category": "benign",
+        "text": "Thank you for subscribing to our newsletter.",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-tuning-02",
+        "category": "benign",
+        "text": "This product is made from 100% recycled materials.",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-holdout-03",
+        "category": "benign",
+        "text": "Free returns within 30 days of delivery.",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-holdout-04",
+        "category": "benign",
+        "text": "Our support team is available Monday through Friday.",
+        "requiredSecret": false
+      },
+      {
+        "fixture": "benign-holdout-05",
+        "category": "benign",
+        "text": "Battery life: up to 12 hours on a single charge.",
+        "requiredSecret": false
+      }
+    ]
+  }
+}

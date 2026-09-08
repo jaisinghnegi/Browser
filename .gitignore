@@ -16,3 +16,7 @@ extension/generated/validators.js
 .cache/
 dist-review/
 dist-e2e/
+# Regenerable binary evaluation artifacts (npm run phase2:fixtures, then scripts/phase2/{capture-screenshots,detect,evaluate}.mjs).
+# The JSON reports (pipeline-output.json, leakage-report.json) are committed as evidence; the images that produced them are not.
+fixtures/phase2/screenshots/
+fixtures/phase2/results/*.png
