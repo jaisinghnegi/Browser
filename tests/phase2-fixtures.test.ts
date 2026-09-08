@@ -9,7 +9,8 @@ const sha256 = (path: string) => createHash('sha256').update(readFileSync(resolv
 
 const manifest = readJson('fixtures/phase2/manifest.json') as Array<{
   id: string; set: 'tuning' | 'holdout'; primaryCategory: string; hardNegative: boolean; benign: boolean;
-  regions: Array<{ category: string; text: string; multiline?: boolean }>;
+  tags: string[]; task: boolean;
+  regions: Array<{ category: string; text: string; multiline?: boolean; groupId?: string; fullText?: string }>;
 }>;
 const tuning = readJson('fixtures/phase2/tuning.json');
 const holdout = readJson('fixtures/phase2/holdout.json');
@@ -75,5 +76,55 @@ describe('Phase 2 labeled fixture set', () => {
     const benign = manifest.filter(e => e.benign);
     expect(benign.length).toBeGreaterThan(0);
     for (const entry of benign) expect(entry.hardNegative).toBe(false);
+  });
+
+  it('every fixture carries the same fill affordance, not only the benign set', () => {
+    // Utility/correct-fill must be measurable on sensitive and mixed pages too, not only on
+    // pages with nothing to leak -- otherwise input presence itself confounds the corpus.
+    for (const entry of manifest) expect(entry.task, entry.id).toBe(true);
+  });
+
+  it('mixed/tiny/altLayout tags each appear in both tuning and holdout', () => {
+    for (const tag of ['mixed', 'tiny', 'altLayout']) {
+      const sets = new Set(manifest.filter(e => e.tags.includes(tag)).map(e => e.set));
+      expect([...sets].sort(), `tag "${tag}"`).toEqual(['holdout', 'tuning']);
+    }
+  });
+
+  it('split-fragment regions record a shared groupId and the reassembled fullText', () => {
+    const splitEntries = manifest.filter(e => e.tags.includes('split'));
+    expect(splitEntries.length).toBeGreaterThan(0);
+    for (const entry of splitEntries) {
+      const fragments = entry.regions.filter(r => r.groupId);
+      expect(fragments.length, entry.id).toBeGreaterThanOrEqual(2);
+      const groupIds = new Set(fragments.map(r => r.groupId));
+      expect(groupIds.size, `${entry.id} should share one groupId`).toBe(1);
+      const fullTexts = new Set(fragments.map(r => r.fullText));
+      expect(fullTexts.size, `${entry.id} should share one fullText`).toBe(1);
+      const full = [...fullTexts][0]!;
+      const concatenated = fragments.map(r => r.text).join('');
+      expect(full.includes(concatenated) || concatenated.includes(full), entry.id).toBe(true);
+    }
+  });
+
+  it('clean fixture pages carry no data-gt-* or data-fixture-id attributes', () => {
+    // These pages are what any future detector-evaluation/serving code loads -- a detector
+    // reading `data-gt-category` off the DOM would be reading the answer key, not detecting
+    // anything. Only fixtures/phase2/pages-labeled/ (gitignored, measurement-tooling-only)
+    // carries them.
+    for (const entry of manifest) {
+      const html = readFileSync(resolve(root, `fixtures/phase2/pages/${entry.id}.html`), 'utf8');
+      expect(html, entry.id).not.toMatch(/data-gt-/);
+      expect(html, entry.id).not.toMatch(/data-fixture-id/);
+    }
+  });
+
+  it('ground truth records the rendering engine/version and computed font for reproducibility', () => {
+    for (const entry of manifest) {
+      const gt = readJson(`fixtures/phase2/ground-truth/${entry.id}.json`);
+      expect(gt.renderer?.engine, entry.id).toBeTruthy();
+      expect(gt.renderer?.version, entry.id).toBeTruthy();
+      expect(gt.computedFontFamily, entry.id).toBeTruthy();
+    }
   });
 });

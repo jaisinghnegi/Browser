@@ -4,14 +4,21 @@
   "primaryCategory": "email",
   "hardNegative": false,
   "benign": false,
-  "tags": [],
+  "tags": [
+    "mixed"
+  ],
   "referenceViewport": {
     "width": 1000,
     "height": 800,
     "devicePixelRatio": 1
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "email",
@@ -28,6 +35,44 @@
           "x": 24,
           "y": 24,
           "width": 238.3125,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "address",
+      "text": "296 Foxglove Terrace, Bellcross 88889",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 57,
+        "width": 264.640625,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 57,
+          "width": 264.640625,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "category": "phone",
+      "text": "+91 9754320988",
+      "multiline": false,
+      "box": {
+        "x": 24,
+        "y": 90,
+        "width": 118.828125,
+        "height": 21
+      },
+      "lineBoxes": [
+        {
+          "x": 24,
+          "y": 90,
+          "width": 118.828125,
           "height": 21
         }
       ]

@@ -13,7 +13,12 @@
     "devicePixelRatio": 1.5
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "name-in-address",

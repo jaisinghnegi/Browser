@@ -13,8 +13,19 @@ described in the Phase 2 plan §5. Each sample is one page with:
 
 - Zero or more **seeded sensitive regions**: visibly-rendered text blocks matching one of the
   in-scope categories below, placed at a known location.
-- Zero or one **target input field** (matching Phase 1's `#shipping-address` pattern) whose
-  correct fill value comes from the local vault, never from a seeded region.
+- **A target input field** (matching Phase 1's `#shipping-address` pattern) whose correct fill
+  value comes from the local vault, never from a seeded region. **Correction**: an earlier
+  draft gave this only to the benign-control set, so utility/correct-fill was measurable only
+  on pages with nothing to leak, and input presence itself became a confound between the
+  "sensitive" and "benign" halves of the corpus. Every fixture now carries the identical fill
+  affordance, so privacy (no leak) and utility (correct fill) are measured together on the
+  same sensitive/mixed/ambiguous pages, not on two structurally different page populations.
+- **Two HTML variants, identically rendered**: `fixtures/phase2/pages/<id>.html` (the real
+  fixture — no `data-gt-*`/`data-fixture-id` attributes at all, so nothing reading this page
+  can use them as an answer key) and `fixtures/phase2/pages-labeled/<id>.html` (adds those
+  attributes, read *only* by the offline measurement tooling in §6, gitignored — never loaded
+  by anything else). No CSS in either tree selects on these attributes, so they don't affect
+  layout; ground truth measured from the labeled tree is valid for the clean tree.
 - A **ground-truth JSON file**, same basename as the fixture, never read by any runtime code —
   only by the offline evaluation harness (test code, not `extension/**`).
 
@@ -27,19 +38,23 @@ described in the Phase 2 plan §5. Each sample is one page with:
   "primaryCategory": "address",
   "hardNegative": false,   // true only for the ambiguous-shaped set, see §4
   "benign": false,         // true only for the benign control set, see §5
-  "tags": ["mixed" /* | "split" | "nonSquareDPR" */],
+  "tags": ["mixed" /* | "split" | "tiny" | "nonSquareDPR" | "altLayout" */],
   "referenceViewport": { "width": 1000, "height": 800, "devicePixelRatio": 1 },
   "fontPx": 16,
-  "task": false,  // true only for benign-control samples, which carry a fill task for utility measurement
+  "task": true,  // every fixture carries the fill affordance now, see §6's correction
+  "renderer": { "engine": "chromium", "version": "153.0.8010.12" }, // measured at generation time
+  "computedFontFamily": "system-ui, sans-serif", // or the altLayout serif stack, as actually rendered
   "regions": [
     {
       "category": "address" | "phone" | "email" | "name-in-address" | "ambiguous" | "benign",
       "text": "107 Cedar Court\nSample City, ST 11112",  // exact ground-truth secret text
       "multiline": true,
       "note": "optional free-text",
-      "box": { "x": 24, "y": 24, "width": 155.6, "height": 42 },       // union bounding box
+      "groupId": "phone-tuning-05-g0",  // only on split-fragment regions, see §7
+      "fullText": "9538271605",          // only on split-fragment regions: the reassembled entity
+      "box": { "x": 24, "y": 24, "width": 155.6, "height": 42 },       // union layout-box bounds
       "lineBoxes": [ { "x": 24, "y": 24, "width": 115.4, "height": 21 },  // per-visual-line
-                      { "x": 24, "y": 45, "width": 155.6, "height": 21 } ] // real glyph bounds
+                      { "x": 24, "y": 45, "width": 155.6, "height": 21 } ] // layout-box bounds
     }
   ]
 }
@@ -47,9 +62,14 @@ described in the Phase 2 plan §5. Each sample is one page with:
 
 `box`/`lineBoxes` are **measured, not authored** — see §6. `box` is the overall bounding
 rectangle (a union of all lines, useful for single-line regions); `lineBoxes` gives one
-glyph-tight rectangle per rendered visual line, which is what the future mask-coverage check
-(Phase 2 plan §3) should actually verify against for multiline text, rather than one loose
-box that would overstate what a real redaction needs to cover.
+rectangle per rendered visual line. **Correction**: an earlier draft called these boxes
+"glyph-tight"/"real glyph bounds." That overstates what `getClientRects()` actually returns —
+a CSS inline **layout box** (line-box) derived from font metrics (ascent/descent/line-height),
+not a per-character glyph-ink bounding box; real ink can sit slightly inside this box depending
+on the font. This is still the right ground truth for "does a redaction box drawn here cover
+the rendered line" (Phase 2 plan §3's mask-coverage check), just not a claim about exact glyph
+pixels. `renderer`/`computedFontFamily` are recorded per fixture so a re-measurement on a
+different browser/font environment can be diffed against this one instead of assumed identical.
 
 ## 3. In-scope category templates (explicit, not left implicit in regex)
 
@@ -122,36 +142,59 @@ even though they belong to "tuning" and "holdout" respectively. Corrected:
 Generated (not hand-authored) via `scripts/build-phase2-manifest.mjs` (deterministic content:
 distinct synthetic names/streets/numbers/domains per sample, no randomness, no duplicate
 secret string anywhere in the set — enforced by a build-time check), then
-`scripts/generate-phase2-fixtures.mjs` (manifest → static HTML under `fixtures/phase2/pages/`)
-and `scripts/measure-phase2-fixtures.mjs` (loads each page in a real headless Chromium via
-Playwright at its declared reference viewport/DPR, and measures **actual rendered CSS
-`getClientRects()`** on each labeled region — real glyph-tight bounds, not the containing
-block's full width, and independent of any detection model, per §3's requirement). The
-measurement script also cross-checks rendered text against the manifest and asserts every
-region has a positive-area box and the expected line count before writing ground truth, so a
-template/escaping bug can't silently produce wrong ground truth.
+`scripts/generate-phase2-fixtures.mjs` (manifest → static HTML, written to both
+`fixtures/phase2/pages/` — the real fixture, no `data-gt-*` — and
+`fixtures/phase2/pages-labeled/` — same rendering plus those attributes, measurement-tooling-
+only, gitignored) and `scripts/measure-phase2-fixtures.mjs` (loads each **labeled** page in a
+real headless Chromium via Playwright at its declared reference viewport/DPR, and measures
+**actual rendered CSS `getClientRects()`** on each region — real CSS inline layout-box bounds
+per visual line, not the containing block's full width, and independent of any detection
+model, per §3's requirement; see §2's correction on what "layout box" does and doesn't mean).
+The measurement script also cross-checks rendered text against the manifest and asserts every
+region has a positive-area box and the expected line count. **Correction**: an earlier version
+of this script wrote ground-truth files as it went and only reported failures at the end,
+meaning a bad run could leave partially-invalid ground truth on disk even though the process
+exited nonzero. It now buffers every fixture's measurement in memory first and writes nothing
+to disk unless the entire run has zero failures — an invalid measurement can never partially
+overwrite good frozen ground truth.
 
 `scripts/freeze-phase2-split.mjs` writes `fixtures/phase2/tuning.json` and `holdout.json`: the
-frozen fixture-id list per set plus a SHA256 of each fixture's HTML and ground-truth JSON. A
-committed test (`tests/phase2-fixtures.test.ts`) asserts these hashes still match the files on
-disk, the 25/19/44 counts, no duplicate secrets, every manifest id has a split entry and vice
-versa, every ground-truth box has positive area with the expected line count, and that
-ambiguous-shaped/benign-control samples carry the labels §4/§5 require. This is the durable
-evidence that the freeze happened before tuning, not an after-the-fact claim in prose.
+frozen fixture-id list per set plus a SHA256 of each fixture's **clean** (`pages/`, not
+`pages-labeled/`) HTML and its ground-truth JSON. A committed test
+(`tests/phase2-fixtures.test.ts`) asserts these hashes still match the files on disk, the
+25/19/44 counts, no duplicate secrets, every manifest id has a split entry and vice versa,
+every ground-truth box has positive area with the expected line count, every fixture carries
+the fill affordance (§1's correction), split-fragment regions share one `groupId`/`fullText`
+(§7), clean pages carry no `data-gt-*`/`data-fixture-id` attributes (§1), ground truth records
+`renderer`/`computedFontFamily` (§2), and that ambiguous-shaped/benign-control samples carry
+the labels §4/§5 require. This is the durable evidence that the freeze happened before tuning,
+not an after-the-fact claim in prose.
 
 ### Manifest coverage of the required special cases
 
 Rather than separate fixtures for every special case (which would multiply the count without
-adding new failure modes), a handful of the 44 samples are tagged to also cover:
+adding new failure modes), a handful of the 44 samples are tagged to also cover — **and each
+tag is enforced (by both the manifest builder and the test) to appear in at least one tuning
+and one holdout sample**, correcting an earlier version where `mixed`/`tiny` only appeared in
+tuning, so no claim about them could actually be checked against held-out data:
 
-- **Mixed-category page**: one email-primary sample additionally carries an address and a
-  phone region on the same page (`tags: ["mixed"]`).
-- **Split fields**: two phone samples and two email samples render their secret across two
-  separate DOM elements/lines (`tags: ["split"]`) — one fragment per element.
-- **Tiny characters**: two samples (one address, one email) render their secret region at
-  10px instead of the default 16px (`fontPx: 10`).
+- **Mixed-category page**: one email-primary tuning sample and one email-primary holdout
+  sample additionally carry an address and a phone region on the same page (`tags: ["mixed"]`).
+- **Split fields**: two phone samples and two email samples (one tuning, one holdout, per
+  category) render their secret across two separate DOM elements/lines (`tags: ["split"]`) —
+  one fragment per element, with a shared `groupId`/`fullText` recorded, see §7.
+- **Tiny characters**: one tuning and one holdout sample (address and email respectively)
+  render their secret region at 10px instead of the default 16px (`fontPx: 10`).
 - **Non-square / fractional DPR**: one address sample uses a `900×1200` viewport at
   `devicePixelRatio: 1.5` instead of the `1000×800`/`1` default.
+- **Layout/font variation**: one tuning and one holdout sample (`tags: ["altLayout"]`) use a
+  serif font stack and a centered, bordered, narrower block instead of the default left-aligned
+  full-width stack — a modest but real structural difference, added because an earlier draft
+  had all 44 samples on one identical layout/font, which would have made any robustness claim
+  about layout/font generalization untestable even in principle. This remains a small,
+  deliberately narrow variation, not a claim of broad layout/font robustness — that's future
+  work (Phase 2 plan §3's "unseen layouts" territory belongs to the later benchmark harness
+  phase, not this fixture set).
 
 ## 7. Canonicalization and fragment matching for the future leakage oracle
 
@@ -163,17 +206,22 @@ fixed contract to implement against, not an ad-hoc one invented later:
   (including newlines) to a single space, then trim. This prevents a multiline address (stored
   with an internal `\n` in ground truth) from evading a search that only checks for the literal
   `\n`-joined string, and prevents cosmetic reformatting from masking a real leak.
-- **Fragment matching**: a full ground-truth secret string match is not the only failure mode —
-  a long enough contiguous substring of a secret (e.g. a phone number missing its last two
-  digits, or half of a split address rendered without the other half redacted) is still
-  exposure. The oracle checks substrings of at least a fixed minimum length (to be tuned once
-  real detector/OCR failure modes are observed; starting point: 6 characters, since that's
-  below the shortest in-scope secret fragment worth flagging but long enough to avoid matching
-  incidental short common substrings) against the canonicalized outbound text, not only the
-  full string.
-- **Split-region secrets** (§6's `split` tag): the oracle checks each fragment independently
-  *and* the concatenation of adjacent fragments, since either an individually-exposed fragment
-  or a reconstructable concatenation counts as a leak.
+- **Every explicit ground-truth secret/fragment is matched in full, regardless of length —
+  corrected**. An earlier draft proposed a 6-character minimum before checking a substring at
+  all, which would have missed this set's own 5-character split phone fragments (e.g.
+  `phone-tuning-05`'s `"95382"`/`"71605"`) entirely — a real, already-present exposure the
+  oracle would have silently passed. The rule is now: **every `region.text` (and, for split
+  fragments, every fragment individually) is always checked in full**, no minimum length. A
+  separate, *additional* sliding-window check applies only beyond the explicit ground-truth
+  strings — scanning for any 6+ character contiguous substring of `fullText` (for split
+  entities) or of a longer secret that isn't itself one of the recorded fragments, to catch
+  exposure the fixed regions didn't anticipate. The minimum-length heuristic bounds that
+  *extra* search; it never gates whether a known ground-truth string gets checked.
+- **Split-region secrets** (§6's `split` tag): ground truth now records an explicit `groupId`
+  (shared by every fragment of one entity) and `fullText` (the reassembled value) on each
+  fragment region, so the oracle doesn't have to guess which fragments belong together or
+  reconstruct adjacency itself. The oracle checks: each fragment's `text` individually, the
+  literal `fullText`, and (via the sliding window above) partial reconstructions in between.
 - **Names in address blocks**: per the Phase 2 plan's §5 ("a name adjacent to or embedded in an
   address block is address-block content, not a separately classified category"), the
   `name-in-address` ground-truth regions in this set are included in the secret oracle exactly

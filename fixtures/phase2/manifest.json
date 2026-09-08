@@ -24,7 +24,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-tuning-01",
@@ -46,7 +46,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-tuning-02",
@@ -75,7 +75,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 10,
-    "task": false
+    "task": true
   },
   {
     "id": "address-tuning-03",
@@ -97,7 +97,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-tuning-04",
@@ -117,14 +117,16 @@
     ],
     "hardNegative": false,
     "benign": false,
-    "tags": [],
+    "tags": [
+      "altLayout"
+    ],
     "referenceViewport": {
       "width": 1000,
       "height": 800,
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-tuning-05",
@@ -146,7 +148,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-holdout-06",
@@ -173,7 +175,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-holdout-07",
@@ -195,7 +197,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-holdout-08",
@@ -224,7 +226,7 @@
       "devicePixelRatio": 1.5
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "address-holdout-09",
@@ -246,7 +248,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-00",
@@ -268,7 +270,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-01",
@@ -290,7 +292,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-02",
@@ -312,7 +314,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-03",
@@ -334,7 +336,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-04",
@@ -356,7 +358,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-tuning-05",
@@ -367,12 +369,16 @@
         "category": "phone",
         "text": "95382",
         "multiline": false,
+        "groupId": "phone-tuning-05-g0",
+        "fullText": "9538271605",
         "note": "first fragment, split across elements"
       },
       {
         "category": "phone",
         "text": "71605",
         "multiline": false,
+        "groupId": "phone-tuning-05-g0",
+        "fullText": "9538271605",
         "note": "second fragment, split across elements"
       }
     ],
@@ -387,7 +393,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-holdout-06",
@@ -409,7 +415,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-holdout-07",
@@ -431,7 +437,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-holdout-08",
@@ -453,7 +459,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "phone-holdout-09",
@@ -464,12 +470,16 @@
         "category": "phone",
         "text": "98888",
         "multiline": false,
+        "groupId": "phone-holdout-09-g0",
+        "fullText": "98888-88889",
         "note": "first fragment, split across elements"
       },
       {
         "category": "phone",
         "text": "-88889",
         "multiline": false,
+        "groupId": "phone-holdout-09-g0",
+        "fullText": "98888-88889",
         "note": "second fragment, split across elements"
       }
     ],
@@ -484,7 +494,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-00",
@@ -518,7 +528,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-01",
@@ -540,7 +550,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-02",
@@ -562,7 +572,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-03",
@@ -573,12 +583,16 @@
         "category": "email",
         "text": "karan.mehta3@",
         "multiline": false,
+        "groupId": "email-tuning-03-g0",
+        "fullText": "karan.mehta3@testcorp-3.test",
         "note": "local-part fragment, split across elements"
       },
       {
         "category": "email",
         "text": "testcorp-3.test",
         "multiline": false,
+        "groupId": "email-tuning-03-g0",
+        "fullText": "karan.mehta3@testcorp-3.test",
         "note": "domain fragment, split across elements"
       }
     ],
@@ -591,7 +605,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-04",
@@ -615,7 +629,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 10,
-    "task": false
+    "task": true
   },
   {
     "id": "email-tuning-05",
@@ -637,7 +651,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-holdout-06",
@@ -652,14 +666,16 @@
     ],
     "hardNegative": false,
     "benign": false,
-    "tags": [],
+    "tags": [
+      "tiny"
+    ],
     "referenceViewport": {
       "width": 1000,
       "height": 800,
       "devicePixelRatio": 1
     },
-    "fontPx": 16,
-    "task": false
+    "fontPx": 10,
+    "task": true
   },
   {
     "id": "email-holdout-07",
@@ -670,12 +686,16 @@
         "category": "email",
         "text": "vikram.shah7@",
         "multiline": false,
+        "groupId": "email-holdout-07-g0",
+        "fullText": "vikram.shah7@testcorp-7.test",
         "note": "local-part fragment, split across elements"
       },
       {
         "category": "email",
         "text": "testcorp-7.test",
         "multiline": false,
+        "groupId": "email-holdout-07-g0",
+        "fullText": "vikram.shah7@testcorp-7.test",
         "note": "domain fragment, split across elements"
       }
     ],
@@ -688,7 +708,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-holdout-08",
@@ -699,18 +719,30 @@
         "category": "email",
         "text": "ishita.bose8@example-mail-8.test",
         "multiline": false
+      },
+      {
+        "category": "address",
+        "text": "296 Foxglove Terrace, Bellcross 88889",
+        "multiline": false
+      },
+      {
+        "category": "phone",
+        "text": "+91 9754320988",
+        "multiline": false
       }
     ],
     "hardNegative": false,
     "benign": false,
-    "tags": [],
+    "tags": [
+      "mixed"
+    ],
     "referenceViewport": {
       "width": 1000,
       "height": 800,
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "email-holdout-09",
@@ -725,14 +757,16 @@
     ],
     "hardNegative": false,
     "benign": false,
-    "tags": [],
+    "tags": [
+      "altLayout"
+    ],
     "referenceViewport": {
       "width": 1000,
       "height": 800,
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-tuning-00",
@@ -755,7 +789,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-tuning-01",
@@ -778,7 +812,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-tuning-02",
@@ -801,7 +835,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-tuning-03",
@@ -824,7 +858,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-holdout-04",
@@ -847,7 +881,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-holdout-05",
@@ -870,7 +904,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-holdout-06",
@@ -893,7 +927,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "ambiguous-holdout-07",
@@ -916,7 +950,7 @@
       "devicePixelRatio": 1
     },
     "fontPx": 16,
-    "task": false
+    "task": true
   },
   {
     "id": "benign-tuning-00",

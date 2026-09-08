@@ -13,13 +13,20 @@
     "devicePixelRatio": 1
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "phone",
       "text": "98888",
       "multiline": false,
       "note": "first fragment, split across elements",
+      "groupId": "phone-holdout-09-g0",
+      "fullText": "98888-88889",
       "box": {
         "x": 24,
         "y": 24,
@@ -40,6 +47,8 @@
       "text": "-88889",
       "multiline": false,
       "note": "second fragment, split across elements",
+      "groupId": "phone-holdout-09-g0",
+      "fullText": "98888-88889",
       "box": {
         "x": 24,
         "y": 57,

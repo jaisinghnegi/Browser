@@ -4,31 +4,38 @@
   "primaryCategory": "email",
   "hardNegative": false,
   "benign": false,
-  "tags": [],
+  "tags": [
+    "altLayout"
+  ],
   "referenceViewport": {
     "width": 1000,
     "height": 800,
     "devicePixelRatio": 1
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "Georgia, \"Times New Roman\", serif",
   "regions": [
     {
       "category": "email",
       "text": "aditya.kulkarni9@sample-inbox-9.test",
       "multiline": false,
       "box": {
-        "x": 24,
-        "y": 24,
-        "width": 265.890625,
-        "height": 21
+        "x": 363.65625,
+        "y": 33,
+        "width": 272.671875,
+        "height": 19
       },
       "lineBoxes": [
         {
-          "x": 24,
-          "y": 24,
-          "width": 265.890625,
-          "height": 21
+          "x": 363.65625,
+          "y": 33,
+          "width": 272.671875,
+          "height": 19
         }
       ]
     }

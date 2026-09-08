@@ -11,13 +11,20 @@
     "devicePixelRatio": 1
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "email",
       "text": "karan.mehta3@",
       "multiline": false,
       "note": "local-part fragment, split across elements",
+      "groupId": "email-tuning-03-g0",
+      "fullText": "karan.mehta3@testcorp-3.test",
       "box": {
         "x": 24,
         "y": 24,
@@ -38,6 +45,8 @@
       "text": "testcorp-3.test",
       "multiline": false,
       "note": "domain fragment, split across elements",
+      "groupId": "email-tuning-03-g0",
+      "fullText": "karan.mehta3@testcorp-3.test",
       "box": {
         "x": 24,
         "y": 57,

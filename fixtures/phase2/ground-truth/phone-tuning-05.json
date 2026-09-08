@@ -13,13 +13,20 @@
     "devicePixelRatio": 1
   },
   "fontPx": 16,
-  "task": false,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "phone",
       "text": "95382",
       "multiline": false,
       "note": "first fragment, split across elements",
+      "groupId": "phone-tuning-05-g0",
+      "fullText": "9538271605",
       "box": {
         "x": 24,
         "y": 24,
@@ -40,6 +47,8 @@
       "text": "71605",
       "multiline": false,
       "note": "second fragment, split across elements",
+      "groupId": "phone-tuning-05-g0",
+      "fullText": "9538271605",
       "box": {
         "x": 24,
         "y": 57,

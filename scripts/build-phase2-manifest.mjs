@@ -50,6 +50,11 @@ const emailText = (i, { split = false } = {}) => {
 
 const entries = [];
 const push = e => entries.push(e);
+// Every sample carries the same fill-affordance (an input + a local vault value to resolve
+// into it), including sensitive/mixed/ambiguous pages -- not only the benign set. Otherwise
+// task utility is only ever measured on pages with nothing to leak, and input presence itself
+// becomes a confound between the "sensitive" and "benign" halves of the corpus.
+const TASK = true;
 
 // --- Address: 6 tuning + 4 holdout ---
 for (let i = 0; i < 10; i++) {
@@ -58,8 +63,9 @@ for (let i = 0; i < 10; i++) {
   const multiline = i % 4 === 1;
   const withName = i % 2 === 0;
   const tags = [];
-  if (i === 2) tags.push('tiny');
+  if (i === 2) tags.push('tiny'); // tuning-side tiny; email carries the holdout-side tiny case.
   if (i === 8) tags.push('nonSquareDPR');
+  if (i === 4) tags.push('altLayout'); // tuning-side layout/font variant.
   const regions = [];
   if (withName) regions.push({ category: 'name-in-address', text: names[i % names.length], multiline: false });
   regions.push({ category: 'address', text: addressText(i, { multiline, indian }), multiline });
@@ -68,7 +74,7 @@ for (let i = 0; i < 10; i++) {
     regions, hardNegative: false, benign: false, tags,
     referenceViewport: tags.includes('nonSquareDPR')
       ? { width: 900, height: 1200, devicePixelRatio: 1.5 } : { width: 1000, height: 800, devicePixelRatio: 1 },
-    fontPx: tags.includes('tiny') ? 10 : 16, task: false,
+    fontPx: tags.includes('tiny') ? 10 : 16, task: TASK,
   });
 }
 
@@ -78,14 +84,24 @@ for (let i = 0; i < 10; i++) {
   const set = i < 6 ? 'tuning' : 'holdout';
   const variant = phoneVariants[i % phoneVariants.length];
   const split = i === 5 || i === 9;
-  const regions = split
-    ? [{ category: 'phone', text: phoneText(i, variant).slice(0, 5), multiline: false, note: 'first fragment, split across elements' },
-       { category: 'phone', text: phoneText(i, variant).slice(5), multiline: false, note: 'second fragment, split across elements' }]
-    : [{ category: 'phone', text: phoneText(i, variant), multiline: false }];
+  let regions;
+  if (split) {
+    const full = phoneText(i, variant);
+    const groupId = `${`phone-${set}-${String(i).padStart(2, '0')}`}-g0`;
+    // `fullText` (the reassembled entity) and a shared `groupId` are recorded explicitly so
+    // the future leakage oracle can check fragment adjacency/concatenation from ground truth
+    // directly, rather than having to guess which fragments belong together.
+    regions = [
+      { category: 'phone', text: full.slice(0, 5), multiline: false, groupId, fullText: full, note: 'first fragment, split across elements' },
+      { category: 'phone', text: full.slice(5), multiline: false, groupId, fullText: full, note: 'second fragment, split across elements' },
+    ];
+  } else {
+    regions = [{ category: 'phone', text: phoneText(i, variant), multiline: false }];
+  }
   push({
     id: `phone-${set}-${String(i).padStart(2, '0')}`, set, primaryCategory: 'phone',
     regions, hardNegative: false, benign: false, tags: split ? ['split'] : [],
-    referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 }, fontPx: 16, task: false,
+    referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 }, fontPx: 16, task: TASK,
   });
 }
 
@@ -94,13 +110,20 @@ for (let i = 0; i < 10; i++) {
   const set = i < 6 ? 'tuning' : 'holdout';
   const split = i === 3 || i === 7;
   const tags = [];
-  if (i === 4) tags.push('tiny');
-  if (i === 0) tags.push('mixed'); // also carries an address + phone region on the same page
+  if (i === 4) tags.push('tiny'); // tuning-side tiny.
+  if (i === 6) tags.push('tiny'); // holdout-side tiny.
+  if (i === 0) tags.push('mixed'); // tuning-side mixed.
+  if (i === 8) tags.push('mixed'); // holdout-side mixed.
+  if (i === 9) tags.push('altLayout'); // holdout-side layout/font variant (address-tuning-04 is the tuning-side one).
   let regions;
   if (split) {
     const { local, domain } = emailText(i, { split: true });
-    regions = [{ category: 'email', text: `${local}@`, multiline: false, note: 'local-part fragment, split across elements' },
-               { category: 'email', text: domain, multiline: false, note: 'domain fragment, split across elements' }];
+    const full = `${local}@${domain}`;
+    const groupId = `email-${set}-${String(i).padStart(2, '0')}-g0`;
+    regions = [
+      { category: 'email', text: `${local}@`, multiline: false, groupId, fullText: full, note: 'local-part fragment, split across elements' },
+      { category: 'email', text: domain, multiline: false, groupId, fullText: full, note: 'domain fragment, split across elements' },
+    ];
   } else {
     regions = [{ category: 'email', text: emailText(i), multiline: false }];
   }
@@ -112,7 +135,7 @@ for (let i = 0; i < 10; i++) {
     id: `email-${set}-${String(i).padStart(2, '0')}`, set, primaryCategory: 'email',
     regions, hardNegative: false, benign: false, tags,
     referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 },
-    fontPx: tags.includes('tiny') ? 10 : 16, task: false,
+    fontPx: tags.includes('tiny') ? 10 : 16, task: TASK,
   });
 }
 
@@ -136,7 +159,7 @@ ambiguous.forEach((a, i) => {
     id: `ambiguous-${set}-${String(i).padStart(2, '0')}`, set, primaryCategory: 'ambiguous',
     regions: [{ category: 'ambiguous', text: a.text, multiline: false, note: a.note }],
     hardNegative: true, benign: false, tags: [],
-    referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 }, fontPx: 16, task: false,
+    referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 }, fontPx: 16, task: TASK,
   });
 });
 
@@ -156,7 +179,7 @@ benignCopy.forEach((text, i) => {
     regions: [{ category: 'benign', text, multiline: false }],
     hardNegative: false, benign: true, tags: [],
     referenceViewport: { width: 1000, height: 800, devicePixelRatio: 1 }, fontPx: 16,
-    task: true, // benign pages carry the fill task, to measure utility/task-completion survival.
+    task: TASK,
   });
 });
 
@@ -165,6 +188,15 @@ for (const e of entries) for (const r of e.regions) {
   const key = r.text.replace(/\s+/g, ' ').trim();
   if (dup.has(key)) throw new Error(`Duplicate secret string across fixtures: "${key}" in ${dup.get(key)} and ${e.id}`);
   dup.set(key, e.id);
+}
+
+// Sanity: mixed/tiny/altLayout must each appear in both sets, not only tuning, so robustness
+// claims about them can actually be evaluated on the holdout.
+for (const tag of ['mixed', 'tiny', 'altLayout']) {
+  const sets = new Set(entries.filter(e => e.tags.includes(tag)).map(e => e.set));
+  if (!sets.has('tuning') || !sets.has('holdout')) {
+    throw new Error(`Tag "${tag}" must appear in both tuning and holdout; found in: ${[...sets].join(', ') || 'neither'}`);
+  }
 }
 
 const counts = entries.reduce((acc, e) => {

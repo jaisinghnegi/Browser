@@ -10,6 +10,9 @@ const hashOf = async path => createHash('sha256').update(await readFile(path)).d
 
 const bySet = { tuning: [], holdout: [] };
 for (const entry of manifest) {
+  // Hash the clean fixture (no data-gt-* answer-key attributes) -- the one anything besides
+  // offline measurement should ever load -- plus its measured ground truth. The
+  // pages-labeled/ tree is measurement-only tooling output, not a frozen artifact.
   const htmlPath = new URL(`../fixtures/phase2/pages/${entry.id}.html`, import.meta.url);
   const gtPath = new URL(`../fixtures/phase2/ground-truth/${entry.id}.json`, import.meta.url);
   bySet[entry.set].push({

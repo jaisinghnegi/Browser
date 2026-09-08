@@ -8,152 +8,152 @@
       "primaryCategory": "address",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "5669443bced2d1d1de7b6a0d36cf0960b7720d06def56b7c76df7ad30d8a100e",
-      "groundTruthSha256": "b13249a22064d59af438343e3382d02ecfc728122d3d3336d7ff2a38fe1dee55"
+      "htmlSha256": "9852f638f409ae6e8fb6c8c7c34bb481eccd214a0d4fcf24a12e1205d3f93276",
+      "groundTruthSha256": "71a31810b383377b9588a09421a95bb380c33f3cd23216ab3d794b4a88378ac0"
     },
     {
       "id": "address-holdout-07",
       "primaryCategory": "address",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "64d0837a23946490ce1531d5d6a68a16eac00dab92edee47b421738d1921aa81",
-      "groundTruthSha256": "05171db3092f1cd7dd7023d23555012e613c71e1bdb4a89999ce871adefab1a0"
+      "htmlSha256": "9bc0d59a683fc1354017235e2454b49d20f8c1190b7b3f2e0ccc53771b61951e",
+      "groundTruthSha256": "ece47819f50285e271e6b7b1ebe1eb6896938704020441a6d3b124949784bb1a"
     },
     {
       "id": "address-holdout-08",
       "primaryCategory": "address",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "816321ac421ebce6767d4faaf28d88cbebdaa457428d72b7fccb4b5de9addf8f",
-      "groundTruthSha256": "515f58780c20673221ce01da9a718dcd62546a71aeee58ead5b2d0e69d8bb94d"
+      "htmlSha256": "539b1df10dc7275d1114d63f406ccc5d88591e9186cc2eed2e84eb23b8d1ec2b",
+      "groundTruthSha256": "7e8f726cdac3be5322c6517ab2cb63ca52f97c737b3c26c4efc683c28cd7d040"
     },
     {
       "id": "address-holdout-09",
       "primaryCategory": "address",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "64edfad83b52f119936eb83b867d6d24233321bf0362ece790f5378e656b8ffd",
-      "groundTruthSha256": "733842b1bd95011519902bbf25bf14434c8c20bb8c1322abf4d5d7d1dc5b5290"
+      "htmlSha256": "0f131a49edbfa7451421f4ccf91c7ff159c34e0790e5215e7ec00cd3ce5044d4",
+      "groundTruthSha256": "682a5d0df27c21cc9a5e6e28c904f93b81fea16cb368af22a0f09fdd9d87b559"
     },
     {
       "id": "phone-holdout-06",
       "primaryCategory": "phone",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "2cbd466ddb1f769a8177d3a33857b6f27454470eb773d91426a0eab143f1dbd9",
-      "groundTruthSha256": "9939bf331eee7accad3eb7d9b1287814195a954d2b8a9d19c3d5ca987e2d8e86"
+      "htmlSha256": "a047dbfa30ae78ec6cfc28d105e9444bc90f26f3b966820a93126b8659a169d7",
+      "groundTruthSha256": "1629e5e06cea8e25c3ecdc0ebab3286bde06abe9e50629d9e2125b054b4ea671"
     },
     {
       "id": "phone-holdout-07",
       "primaryCategory": "phone",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "b6181829822548672056104f13d614aeecb0046fe8d0ec0934bb6dca1484a1db",
-      "groundTruthSha256": "368db2fca9e793bc404138c5bd10d0f525c44c5be39acf7b04749ede5d709491"
+      "htmlSha256": "0378b3534f6d8244d2b6245740798b5f02a9936ef3813c7f4cac6ee5658270e3",
+      "groundTruthSha256": "1b70fe6b0312f6f05484f42ca7fe3122e93eced71457926eda7672d00e156cae"
     },
     {
       "id": "phone-holdout-08",
       "primaryCategory": "phone",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "f895d3ddac816fc8e2d9910b8e865fae6c1390e98f459320812e015cec906f91",
-      "groundTruthSha256": "9626f34241eb7f8323b42c9a2fca190c64d3968b4976aeaafe6b5b0161b8bd46"
+      "htmlSha256": "e58fec298dcfa32ab6ee47cba7b2c23844f3a1cd6eb87a8189cf53e54c425d61",
+      "groundTruthSha256": "702bb44267feafcb4f9cd5046d64678565aaf13a822a56451935f770d7713fdb"
     },
     {
       "id": "phone-holdout-09",
       "primaryCategory": "phone",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "a0f0cf2208f2f8dfacf6e4283b6976b0f4f7e83abbf6a30e699a10a14aa319a6",
-      "groundTruthSha256": "caf0e039b5c227d9ab4395cdbb5e77589ef05314994ec43d88c3384f3f4d5ec1"
+      "htmlSha256": "149acd010dd11a803cebd5b995f0e5209daf27ad6b3fa34f016047667f9608fc",
+      "groundTruthSha256": "573c2b63028a875835f0c139da30099636094fe285bcb0c80c1f065697ad3591"
     },
     {
       "id": "email-holdout-06",
       "primaryCategory": "email",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "04a32fd1e3a714ccc783e73cadf487291706c2ffda99b2557c9573d77b2cff9f",
-      "groundTruthSha256": "6d016086a4ef98784a50f5b929fff8b6860e6ab6bdf85b233812f9047bd75e9d"
+      "htmlSha256": "9408b664057aadb918b4b5437e697e3a1c4548685f1ba7ba082db0cad0ba061e",
+      "groundTruthSha256": "93cc9411f11315f63e8a034574f1d46dfadcf175cb8184c0452980d91716c4fb"
     },
     {
       "id": "email-holdout-07",
       "primaryCategory": "email",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "87243c7070e75df09e85270f33d747ec5978af2a20896d2bdcc9c960f7012c50",
-      "groundTruthSha256": "34cb7eecc9fbe927a438d2df1b8c48250b041b5eafbea56283ff73d00b9efdc2"
+      "htmlSha256": "9943f98ffe60df1f33104e987c86bc2883ab6c4882c24667db3051c440d1ec70",
+      "groundTruthSha256": "5177dd5e78c2435c9328eccbbe9a601bfe07a8e60bc5ee72d25e90ec7c4ecc48"
     },
     {
       "id": "email-holdout-08",
       "primaryCategory": "email",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "4bb02bf520b772103aaa9cbf5d56c8fc13fab9d01493d1be06d316a71b2bb43d",
-      "groundTruthSha256": "57dc33791a6bb7b2245378809471543304c4cdcb1f8e5807c3f2a9eb1e928628"
+      "htmlSha256": "0d529afbb9d87cfa038eb3f61580774425c47d38aa13c17ed635bd564e2d0c10",
+      "groundTruthSha256": "e562e9378638b92ff38afcf1676aa1a8ec9dd2bd8f98d10b778abed3e29eb020"
     },
     {
       "id": "email-holdout-09",
       "primaryCategory": "email",
       "hardNegative": false,
       "benign": false,
-      "htmlSha256": "af316a483c006003bcf73b6066cd26d9d72a32426af17033c82e882a81c36377",
-      "groundTruthSha256": "c28c5e02b530eb2e536e8033d40e1d695d49cf65b3a84855bc9ac6ca73aadd59"
+      "htmlSha256": "c58ae46400610ebc52daae5bfc963b31bd915de1f602b796dfb998d760960207",
+      "groundTruthSha256": "f79707da93f67ebcf7acdc175b100aee4a9d90d82e291d82e8ae5441759fba36"
     },
     {
       "id": "ambiguous-holdout-04",
       "primaryCategory": "ambiguous",
       "hardNegative": true,
       "benign": false,
-      "htmlSha256": "e09bdcd298caa62546f6b163b75864edbf911f059cec0625a0687ccb8121138c",
-      "groundTruthSha256": "09da2d98ff32d0b29483cf54d5ea323dde27fd0f36dba19c9215105b42e6bd36"
+      "htmlSha256": "d779e0a5af2ad26b4cdab5255fb15daa0bcde9b96af676de22985a0a254e7da9",
+      "groundTruthSha256": "d21080a002f58b5528bc6f5e53c614e3b627babd8a9f2a12f1aa88b0e54869d7"
     },
     {
       "id": "ambiguous-holdout-05",
       "primaryCategory": "ambiguous",
       "hardNegative": true,
       "benign": false,
-      "htmlSha256": "3f05eb2f26830cd3639d5c045eb388892e6601fd9ec09783ce7da22205ea3f1f",
-      "groundTruthSha256": "946379b391ae91ac19ba7655da58839114630776e7c811612f01520c2aff66de"
+      "htmlSha256": "76bb36dd7a4dc8c3bd6a76f5de6289a8a322779d73f4ac96a7c4b2c0c832fdf2",
+      "groundTruthSha256": "a90728ac5687e1410061a076efe374111e2a5f1e27eec61f57442a775936c66c"
     },
     {
       "id": "ambiguous-holdout-06",
       "primaryCategory": "ambiguous",
       "hardNegative": true,
       "benign": false,
-      "htmlSha256": "9d7b9437f4d4d4b93362bb092b9242d4137eb4da6150fcb56f0a64abf9c2a130",
-      "groundTruthSha256": "38383a16080e9427ff3c9a4c8b56947130d98a29bfb60aa5fbc9b652794ee86b"
+      "htmlSha256": "73ebb8aad978c776626c89bf1ed326df790ff95409b94009768e1891e8240344",
+      "groundTruthSha256": "b16729a57489c9e5c0ec6dad752d9335161760bdd83d7369f85465a7b5c7673f"
     },
     {
       "id": "ambiguous-holdout-07",
       "primaryCategory": "ambiguous",
       "hardNegative": true,
       "benign": false,
-      "htmlSha256": "3cac0c8feaf36e48ab9b0bf61324895eae066ec3399900e5e96bf282599e83ff",
-      "groundTruthSha256": "1f2c0a3fb042e9654c4fb302c4e8264c376e736de65e60495e2ab53b9b924559"
+      "htmlSha256": "94dc94cd73acab18c9745997e5c275ee4af09bad89658faafcadb307d352718d",
+      "groundTruthSha256": "6c49eab50c2687b3634b647d44a44aae9f18e84b6a5001891199633c889c0d35"
     },
     {
       "id": "benign-holdout-03",
       "primaryCategory": "benign",
       "hardNegative": false,
       "benign": true,
-      "htmlSha256": "7aa39f0eb00acd9a8da1f20a3901501966be263be63bf4865547e257467b25e3",
-      "groundTruthSha256": "ad0475126b36715d92052840597f1169878fa7425f315baf1d6693416ca0408a"
+      "htmlSha256": "a81ea3e68b408c236054eae0b140768e314745f2b8cf935a98923abeed1752f7",
+      "groundTruthSha256": "243396be01593c67199072ce73bdcd0bbe89553385ef43f0f62c5a5bc3e573fc"
     },
     {
       "id": "benign-holdout-04",
       "primaryCategory": "benign",
       "hardNegative": false,
       "benign": true,
-      "htmlSha256": "fb3cb2411a0efbdd63db80ecce9d3dab076f6801fb63d57292bbe1a1a8574060",
-      "groundTruthSha256": "140e2e0326bbc82d933067d1375f15a72a0105bc77bae3ea948edb2306216cd7"
+      "htmlSha256": "2267bc510227ddca5870bc2212e7c9234e4d82e3832101868e7303669ea830c4",
+      "groundTruthSha256": "2384b0eacc90c1bf044104dedf98f35454efd5ce6c630cb872ba7ca035a7163c"
     },
     {
       "id": "benign-holdout-05",
       "primaryCategory": "benign",
       "hardNegative": false,
       "benign": true,
-      "htmlSha256": "3242c22048cd33752b365864c8aab45ed09ae3abed7bcefa3530de7a05e993e1",
-      "groundTruthSha256": "2630afc491c15ec0ae78fdd002aae295fb749a374aeeec1ca17187920995c7f4"
+      "htmlSha256": "854bca2784a3fe780ff201bef3dc62517f36efe959d2e133ac05537c55dc408d",
+      "groundTruthSha256": "309b73eafca89fe384f3e062a570c9f60640e04cfab0f9c834c251b04db647da"
     }
   ]
 }

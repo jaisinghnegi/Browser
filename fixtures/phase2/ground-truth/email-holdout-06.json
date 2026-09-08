@@ -4,14 +4,21 @@
   "primaryCategory": "email",
   "hardNegative": false,
   "benign": false,
-  "tags": [],
+  "tags": [
+    "tiny"
+  ],
   "referenceViewport": {
     "width": 1000,
     "height": 800,
     "devicePixelRatio": 1
   },
-  "fontPx": 16,
-  "task": false,
+  "fontPx": 10,
+  "task": true,
+  "renderer": {
+    "engine": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "computedFontFamily": "system-ui, sans-serif",
   "regions": [
     {
       "category": "email",
@@ -20,15 +27,15 @@
       "box": {
         "x": 24,
         "y": 24,
-        "width": 241.28125,
-        "height": 21
+        "width": 150.8125,
+        "height": 14
       },
       "lineBoxes": [
         {
           "x": 24,
           "y": 24,
-          "width": 241.28125,
-          "height": 21
+          "width": 150.8125,
+          "height": 14
         }
       ]
     }

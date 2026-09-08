@@ -7,6 +7,9 @@ test-results/
 playwright-report/
 models/*.onnx
 models/text-recognizer-dictionary.txt
+# Regenerable measurement-only scratch tree (data-gt-* attributes); never the fixture any
+# detector-evaluation or serving code should load -- see scripts/generate-phase2-fixtures.mjs.
+fixtures/phase2/pages-labeled/
 .worktrees/
 *.log
 extension/generated/validators.js
