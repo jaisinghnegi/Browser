@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Privacy Agent — Local Demo",
+  "version": "0.1.0",
+  "description": "Synthetic address filling with local vision and a sanitized planner channel.",
+  "minimum_chrome_version": "120",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://localhost/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_popup": "popup.html", "default_title": "Privacy Agent" },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; connect-src 'self' http://localhost:8171; img-src 'self' data:; style-src 'self'"
+  }
+}

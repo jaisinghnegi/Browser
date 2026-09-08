@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:privacy-agent:protocol",
+  "definitions": {
+    "id": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" },
+    "request": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocol", "taskId", "observationId", "target", "fieldKind", "valueRef"],
+      "properties": {
+        "protocol": { "const": 1 },
+        "taskId": { "$ref": "#/definitions/id" },
+        "observationId": { "$ref": "#/definitions/id" },
+        "target": { "$ref": "#/definitions/id" },
+        "fieldKind": { "const": "shipping-address" },
+        "valueRef": { "const": "ADDRESS_1" }
+      }
+    },
+    "action": {
+      "type": "object", "additionalProperties": false,
+      "required": ["action", "actionId", "taskId", "observationId", "target", "valueRef"],
+      "properties": {
+        "action": { "const": "fill" },
+        "actionId": { "$ref": "#/definitions/id" },
+        "taskId": { "$ref": "#/definitions/id" },
+        "observationId": { "$ref": "#/definitions/id" },
+        "target": { "$ref": "#/definitions/id" },
+        "valueRef": { "const": "ADDRESS_1" }
+      }
+    }
+  }
+}

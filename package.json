@@ -1,0 +1,28 @@
+{
+  "name": "on-device-privacy-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "pretypecheck": "node scripts/generate-contract.mjs",
+    "test": "vitest run",
+    "pretest": "node scripts/generate-contract.mjs",
+    "test:e2e": "playwright test",
+    "model:download": "node scripts/download-model.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "onnxruntime-web": "1.29.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/chrome": "0.2.9",
+    "@types/node": "26.5.0",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  }
+}

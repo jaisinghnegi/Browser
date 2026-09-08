@@ -1,0 +1,20 @@
+* { box-sizing: border-box; }
+body { width: 380px; margin: 0; background: #f5f7fb; color: #17243b; font: 14px/1.5 system-ui, sans-serif; }
+main { padding: 24px; }
+.eyebrow { font-size: 10px; font-weight: 750; color: #355b85; letter-spacing: .13em; margin: 0 0 10px; }
+h1 { font-size: 25px; letter-spacing: -.025em; line-height: 1.2; margin: 0 0 12px; }
+.intro { color: #465774; }
+.withheld { background: #101a2b; border-radius: 10px; padding: 24px 12px; margin: 20px 0; text-align: center; color: #e5edf9; }
+.withheld span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+.withheld small { display: block; color: #b5c4da; font-size: 11px; margin-top: 7px; }
+#status { min-height: 42px; font-weight: 600; }
+.actions { display: flex; gap: 8px; }
+button { border: 1px solid #243b60; border-radius: 7px; padding: 10px 15px; font: inherit; font-weight: 600; cursor: pointer; }
+#run { background: #214d8b; color: white; flex: 1; }
+#cancel { background: white; color: #243b60; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, summary:focus-visible { outline: 3px solid #547ad3; outline-offset: 3px; }
+details { margin-top: 18px; }
+summary { cursor: pointer; font-weight: 600; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #e8edf5; padding: 12px; border-radius: 7px; font-size: 10px; }
+.note { font-size: 11px; color: #526079; }

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Agent</title><link rel="stylesheet" href="popup.css">
+</head><body><main>
+  <p class="eyebrow">ON-DEVICE · SYNTHETIC DEMO</p>
+  <h1>Keep the address here.</h1>
+  <p class="intro">Vision runs locally. The planner receives a field reference, never the address or page pixels.</p>
+  <div class="withheld" role="img" aria-label="All screenshot pixels withheld from planner">
+    <span>PAGE PIXELS WITHHELD</span><small>Full-frame protection for this demo</small>
+  </div>
+  <p id="status" role="status" aria-live="polite">Open localhost:8171/fixture, then run the demo.</p>
+  <div class="actions"><button id="run" type="button">Run private fill</button><button id="cancel" type="button" disabled>Cancel</button></div>
+  <details><summary>What leaves this device?</summary><pre id="payload">No request sent.</pre></details>
+  <p id="metrics" class="note"></p>
+  <p class="note">Keep this popup open while running. Closing it cancels the task. Fictional data only; this is not a general PII detector.</p>
+</main><script type="module" src="popup.js"></script></body></html>

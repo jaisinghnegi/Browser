@@ -1,0 +1,10 @@
+import { spawn } from 'node:child_process';
+import { mkdirSync, createWriteStream } from 'node:fs';
+import { resolve } from 'node:path';
+mkdirSync('test-results', { recursive: true });
+const log = createWriteStream('test-results/server.log');
+const python = resolve(process.platform === 'win32' ? '.venv/Scripts/python.exe' : '.venv/bin/python');
+const child = spawn(python, ['-m', 'uvicorn', 'server.main:app', '--host', '127.0.0.1', '--port', '8171', '--no-access-log'], { windowsHide: true });
+for (const stream of [child.stdout, child.stderr]) stream.on('data', data => { log.write(data); process.stdout.write(data); });
+child.on('exit', code => { log.end(); process.exitCode = code ?? 1; });
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill());

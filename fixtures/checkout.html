@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Agent — Synthetic Checkout</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f5f8; color: #17243b; font: 17px/1.6 system-ui, sans-serif; }
+    main { max-width: 720px; margin: 64px auto; padding: 40px; background: white; border: 1px solid #d8e0eb; border-radius: 16px; }
+    .tag { color: #355378; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: 32px; margin: 8px 0 16px; line-height: 1.2; }
+    .saved { padding: 20px; background: #fff3e8; border: 1px solid #e9c7a8; border-radius: 8px; margin: 24px 0; }
+    .saved p { margin: 4px 0; }
+    label { display: block; font-weight: 650; margin-bottom: 8px; }
+    input { display: block; width: 100%; font: inherit; padding: 14px; border: 2px solid #7589a4; border-radius: 8px; }
+    input:focus { outline: 3px solid #8db7ff; outline-offset: 3px; }
+    .note { font-size: 14px; color: #526079; }
+    @media(max-width: 760px) { main { margin: 20px; padding: 24px; } }
+  </style>
+</head>
+<body><main>
+  <span class="tag">SIH26171 · Synthetic fixture</span>
+  <h1>Private address, local fill.</h1>
+  <p>Open the Privacy Agent extension and run the demo. This page uses fictional data only.</p>
+  <section class="saved" aria-label="Synthetic saved address">
+    <strong>Saved address — visible sensitive region</strong>
+    <p>71 Visible Road, Sample City 11111</p>
+  </section>
+  <label for="shipping-address">Shipping address</label>
+  <input id="shipping-address" name="shipping-address" type="text" autocomplete="off" spellcheck="false">
+  <p class="note">The extension fills a different synthetic address from its local vault. This fixture has no submission or network scripts.</p>
+</main></body></html>
