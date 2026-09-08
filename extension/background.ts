@@ -1,5 +1,6 @@
 import { buildPayload } from './protocol';
 import { Task, type Binding } from './task';
+import { readCapped } from './planner-io';
 
 const FIXTURE = 'http://localhost:8171/fixture';
 const PLANNER = 'http://localhost:8171/plan';
@@ -33,24 +34,6 @@ function finish(run: Run, status: string, reason: Reason) {
       { documentId: run.documentId }).catch(() => {});
   }
   post(run, { type: 'RESULT', status, reason });
-}
-/** Reads at most `limit` bytes so a misbehaving/compromised planner cannot OOM the worker
- * by streaming an unbounded body before any size check runs. */
-async function readCapped(response: Response, limit: number): Promise<string> {
-  const declared = response.headers.get('Content-Length');
-  if (declared && Number(declared) > limit) fail('planner-action-rejected', 'Oversized action');
-  const reader = response.body?.getReader();
-  if (!reader) return response.text();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > limit) { await reader.cancel(); fail('planner-action-rejected', 'Oversized action'); }
-    chunks.push(value);
-  }
-  return new Blob(chunks as BlobPart[]).text();
 }
 async function current(run: Run): Promise<Binding> {
   live(run);
@@ -116,7 +99,7 @@ async function plan(run: Run, message: { taskId: string; ok: boolean }) {
   });
   live(run);
   if (!response.ok) fail('planner-action-rejected', 'Planner unavailable');
-  const text = await readCapped(response, PLANNER_BODY_LIMIT);
+  const text = await readCapped(response, PLANNER_BODY_LIMIT).catch(() => fail('planner-action-rejected', 'Oversized action'));
   live(run);
   const checked = await current(run);
   let value: string;
