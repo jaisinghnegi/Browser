@@ -5,10 +5,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 22.8125,
-          "width": 268.4375,
-          "height": 62.1875
+          "x": 14,
+          "y": 14,
+          "width": 272.40625,
+          "height": 74
         },
         "text": "Priya Sharma | Flat 100, Andheri, Mumbai - 400058",
         "category": "address",
@@ -16,24 +16,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 98.4375,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
-        "text": "Shipping address [",
+        "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5378.9247,
-      "recognize": 1258.5865000000013,
-      "total": 6654.7827
+      "detect": 4515.468999999999,
+      "recognize": 696.2276999999995,
+      "total": 5527.3252
     }
   },
   {
@@ -42,35 +44,26 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 21.25,
-          "width": 170,
-          "height": 54.375
+          "x": 24,
+          "y": 78,
+          "width": 121.46875,
+          "height": 21
         },
-        "text": "107 Cedar Court | Sample City, ST 11112",
-        "category": "address",
-        "lineCount": 2
-      },
-      {
-        "box": {
-          "x": 26.5625,
-          "y": 85.9375,
-          "width": 123.4375,
-          "height": 12.5
-        },
-        "text": "Shipping address [",
+        "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 1,
+    "maskedRegionCount": 2,
+    "unresolvedCoverageRegionCount": 2,
+    "structuralLineCount": 1,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5138.747800000001,
-      "recognize": 954.0159999999996,
-      "total": 6110.0952
+      "detect": 5885.777999999999,
+      "recognize": 209.05209999999897,
+      "total": 6458.806
     }
   },
   {
@@ -79,35 +72,37 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 19.6875,
-          "width": 163.75,
-          "height": 54.375
+          "x": 14,
+          "y": 14,
+          "width": 170.0625,
+          "height": 60
         },
-        "text": "Ananyalyer | 114 HarborWalk, Rivergate 22223",
+        "text": "Ananyalyer | 114 HarbrWalk Rivergate 2223",
         "category": "address",
         "lineCount": 2
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 85.9375,
-          "width": 123.4375,
-          "height": 9.375
+          "x": 24,
+          "y": 76,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5560.392700000002,
-      "recognize": 840.9504000000015,
-      "total": 6418.5381
+      "detect": 5347.6023000000005,
+      "recognize": 627.7101000000002,
+      "total": 6370.410899999999
     }
   },
   {
@@ -116,35 +111,37 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 22.8125,
-          "width": 260.625,
-          "height": 29.375
+          "x": 14,
+          "y": 14,
+          "width": 267.15625,
+          "height": 41
         },
-        "text": "Flat 121, Sector 62, Noida - 201309",
+        "text": "Flat 121,Sector 62,Noida -201309",
         "category": "address",
         "lineCount": 1
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 4997.343499999999,
-      "recognize": 947.5368000000017,
-      "total": 5960.0180999999975
+      "detect": 5015.9130000000005,
+      "recognize": 591.7393000000011,
+      "total": 5945.9087
     }
   },
   {
@@ -153,10 +150,10 @@
     "blocks": [
       {
         "box": {
-          "x": 360.3125,
-          "y": 29.0625,
-          "width": 284.0625,
-          "height": 79.375
+          "x": 355.375,
+          "y": 23,
+          "width": 289.234375,
+          "height": 86
         },
         "text": "Divya Nair | 128 Birchgate Road, Fernbrook 44445",
         "category": "address",
@@ -164,24 +161,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 123.4375,
-          "width": 118.75,
-          "height": 10.9375
+          "x": 24,
+          "y": 118,
+          "width": 121.96875,
+          "height": 19
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5699.536200000002,
-      "recognize": 1091.2330999999976,
-      "total": 6798.7221999999965
+      "detect": 5298.880000000001,
+      "recognize": 652.779300000002,
+      "total": 6227.3436
     }
   },
   {
@@ -190,35 +189,26 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 21.25,
-          "width": 152.8125,
-          "height": 52.8125
-        },
-        "text": "135 Marigold Street | Oakmoor, ST 55556",
-        "category": "address",
-        "lineCount": 2
-      },
-      {
-        "box": {
-          "x": 28.125,
-          "y": 85.9375,
-          "width": 118.75,
-          "height": 12.5
+          "x": 24,
+          "y": 78,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 1,
+    "maskedRegionCount": 2,
+    "unresolvedCoverageRegionCount": 2,
+    "structuralLineCount": 1,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5571.250899999999,
-      "recognize": 847.3315000000002,
-      "total": 6426.122700000007
+      "detect": 4904.217200000003,
+      "recognize": 179.66799999999785,
+      "total": 5402.747399999997
     }
   },
   {
@@ -227,35 +217,37 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 268.4375,
-          "height": 63.75
+          "x": 14,
+          "y": 14,
+          "width": 272.234375,
+          "height": 74
         },
-        "text": "Meera Pillai | Flat 142, Salt Lake, Kolkata - 700064",
+        "text": "Meera ili | Flat 142,Salt Lake, Kolkata -700064",
         "category": "address",
         "lineCount": 2
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 98.4375,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5178.8634999999995,
-      "recognize": 1194.3012000000017,
-      "total": 6381.863700000002
+      "detect": 5012.779999999999,
+      "recognize": 653.2907999999952,
+      "total": 5937.646000000001
     }
   },
   {
@@ -264,10 +256,10 @@
     "blocks": [
       {
         "box": {
-          "x": 19.6875,
-          "y": 22.8125,
-          "width": 285.625,
-          "height": 29.375
+          "x": 14,
+          "y": 14,
+          "width": 294.109375,
+          "height": 41
         },
         "text": "149 willowmere Ave, Ashcombe 77778",
         "category": "address",
@@ -275,24 +267,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5672.202699999994,
-      "recognize": 1028.4190999999992,
-      "total": 6709.093199999996
+      "detect": 4911.238700000002,
+      "recognize": 652.8199000000022,
+      "total": 5864.819100000001
     }
   },
   {
@@ -301,10 +295,10 @@
     "blocks": [
       {
         "box": {
-          "x": 35,
-          "y": 37.8125,
-          "width": 402.5,
-          "height": 87.5
+          "x": 26,
+          "y": 26,
+          "width": 416.9609375,
+          "height": 101
         },
         "text": "Ishita Bose | 156 Foxglove Terrace, Bellcross 88889",
         "category": "address",
@@ -312,24 +306,26 @@
       },
       {
         "box": {
-          "x": 45,
-          "y": 149.0625,
-          "width": 182.8125,
-          "height": 19.6875
+          "x": 36,
+          "y": 135,
+          "width": 182.203125,
+          "height": 31.5
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1350,
       "height": 1800
     },
     "timingMs": {
-      "detect": 4900.9035,
-      "recognize": 1030.7949999999983,
-      "total": 5946.578000000001
+      "detect": 4555.964899999999,
+      "recognize": 767.8758999999991,
+      "total": 5694.151900000004
     }
   },
   {
@@ -338,35 +334,26 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 249.6875,
-          "height": 52.8125
-        },
-        "text": "Flat 163, Koramangala, Bengaluru | 560034",
-        "category": "address",
-        "lineCount": 2
-      },
-      {
-        "box": {
-          "x": 28.125,
-          "y": 85.9375,
-          "width": 118.75,
-          "height": 12.5
+          "x": 24,
+          "y": 78,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 1,
+    "maskedRegionCount": 2,
+    "unresolvedCoverageRegionCount": 2,
+    "structuralLineCount": 1,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5865.811800000003,
-      "recognize": 856.921199999997,
-      "total": 6733.137800000004
+      "detect": 5213.272999999994,
+      "recognize": 163.3932000000059,
+      "total": 5671.185899999997
     }
   },
   {
@@ -375,35 +362,37 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 102.8125,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 106.25,
+          "height": 41
         },
-        "text": "9100000000",
+        "text": "910000000",
         "category": "phone",
         "lineCount": 1
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 12.5
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
-        "text": "Shipping address [",
+        "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5411.580300000001,
-      "recognize": 527.5118999999977,
-      "total": 5947.280399999989
+      "detect": 4962.718000000001,
+      "recognize": 279.5564000000013,
+      "total": 5513.881899999993
     }
   },
   {
@@ -412,10 +401,10 @@
     "blocks": [
       {
         "box": {
-          "x": 19.6875,
-          "y": 22.8125,
-          "width": 129.375,
-          "height": 29.375
+          "x": 14,
+          "y": 14,
+          "width": 138.828125,
+          "height": 41
         },
         "text": "+91 9187654321",
         "category": "phone",
@@ -423,24 +412,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5419.565199999997,
-      "recognize": 621.3304000000062,
-      "total": 6050.435700000002
+      "detect": 5614.993000000002,
+      "recognize": 407.1817999999912,
+      "total": 6369.355500000005
     }
   },
   {
@@ -449,10 +440,10 @@
     "blocks": [
       {
         "box": {
-          "x": 19.6875,
-          "y": 21.25,
-          "width": 126.25,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 134.453125,
+          "height": 41
         },
         "text": "+919275308642",
         "category": "phone",
@@ -460,24 +451,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5445.8022000000055,
-      "recognize": 597.0709999999963,
-      "total": 6051.423599999995
+      "detect": 5176.6108000000095,
+      "recognize": 390.7600999999995,
+      "total": 6000.077600000004
     }
   },
   {
@@ -486,10 +479,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 110.625,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 114.875,
+          "height": 41
         },
         "text": "09362962963",
         "category": "phone",
@@ -497,24 +490,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5677.443899999998,
-      "recognize": 551.4073999999964,
-      "total": 6236.00970000001
+      "detect": 4949.970199999996,
+      "recognize": 363.64710000000196,
+      "total": 5589.630900000004
     }
   },
   {
@@ -523,10 +518,10 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 21.25,
-          "width": 105.9375,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 112.65625,
+          "height": 41
         },
         "text": "94506-17284",
         "category": "phone",
@@ -534,24 +529,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5563.486699999994,
-      "recognize": 501.86299999999756,
-      "total": 6073.108500000002
+      "detect": 5388.546399999992,
+      "recognize": 318.39670000001206,
+      "total": 6003.294000000009
     }
   },
   {
@@ -560,10 +557,10 @@
     "blocks": [
       {
         "box": {
-          "x": 15,
-          "y": 21.25,
-          "width": 62.1875,
-          "height": 65.3125
+          "x": 14,
+          "y": 14,
+          "width": 63.125,
+          "height": 74
         },
         "text": "95382 | 71605",
         "category": "phone",
@@ -571,24 +568,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 98.4375,
-          "width": 118.75,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5629.781000000003,
-      "recognize": 455.78740000000107,
-      "total": 6094.319700000007
+      "detect": 5225.626100000009,
+      "recognize": 325.1072000000131,
+      "total": 5822.287400000001
     }
   },
   {
@@ -597,10 +596,10 @@
     "blocks": [
       {
         "box": {
-          "x": 19.6875,
-          "y": 21.25,
-          "width": 130.9375,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 138.828125,
+          "height": 41
         },
         "text": "+91 9625925926",
         "category": "phone",
@@ -608,24 +607,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5415.675000000003,
-      "recognize": 608.6732999999949,
-      "total": 6032.525800000003
+      "detect": 5172.058800000013,
+      "recognize": 359.44430000000284,
+      "total": 5829.929500000013
     }
   },
   {
@@ -634,10 +635,10 @@
     "blocks": [
       {
         "box": {
-          "x": 19.6875,
-          "y": 21.25,
-          "width": 126.25,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 134.453125,
+          "height": 41
         },
         "text": "+919713580247",
         "category": "phone",
@@ -645,24 +646,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5580.618700000006,
-      "recognize": 494.19980000000214,
-      "total": 6082.47649999999
+      "detect": 4946.4475999999995,
+      "recognize": 355.7011000000057,
+      "total": 5584.1253
     }
   },
   {
@@ -671,10 +674,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 110.625,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 114.875,
+          "height": 41
         },
         "text": "09801234568",
         "category": "phone",
@@ -682,24 +685,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5371.859400000001,
-      "recognize": 496.29320000000007,
-      "total": 5875.578699999998
+      "detect": 5177.985099999991,
+      "recognize": 293.9462000000058,
+      "total": 5765.534299999999
     }
   },
   {
@@ -708,44 +713,37 @@
     "blocks": [
       {
         "box": {
-          "x": 25,
-          "y": 31.25,
-          "width": 42.1875,
-          "height": 10.9375
+          "x": 14,
+          "y": 14,
+          "width": 69.53125,
+          "height": 74
         },
-        "text": "98888",
-        "category": null
+        "text": "98888 | -88889",
+        "category": "phone",
+        "lineCount": 2
       },
       {
         "box": {
-          "x": 29.6875,
-          "y": 64.0625,
-          "width": 43.75,
-          "height": 10.9375
-        },
-        "text": "-88889",
-        "category": null
-      },
-      {
-        "box": {
-          "x": 26.5625,
-          "y": 98.4375,
-          "width": 118.75,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 0,
+    "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5445.422300000006,
-      "recognize": 561.5945000000065,
-      "total": 6017.452399999995
+      "detect": 5339.06749999999,
+      "recognize": 348.8691000000108,
+      "total": 5951.974099999992
     }
   },
   {
@@ -754,10 +752,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 22.8125,
-          "width": 268.4375,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 273.421875,
+          "height": 41
         },
         "text": "priya.sharma0@example-mail-0.test",
         "category": "email",
@@ -765,21 +763,21 @@
       },
       {
         "box": {
-          "x": 18.125,
-          "y": 55.625,
-          "width": 227.8125,
-          "height": 29.375
+          "x": 14,
+          "y": 47,
+          "width": 233.40625,
+          "height": 41
         },
-        "text": "240 Vault Lane, Testville 00001",
+        "text": "240 Vault Lane, Testvill 00001",
         "category": "address",
         "lineCount": 1
       },
       {
         "box": {
-          "x": 18.125,
-          "y": 88.4375,
-          "width": 134.0625,
-          "height": 29.375
+          "x": 14,
+          "y": 80,
+          "width": 138.828125,
+          "height": 41
         },
         "text": "+91 9953086420",
         "category": "phone",
@@ -787,24 +785,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 132.8125,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 123,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 3,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 4,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5283.165499999988,
-      "recognize": 1626.2801000000036,
-      "total": 6920.241999999984
+      "detect": 4859.342800000013,
+      "recognize": 1089.5984000000026,
+      "total": 6291.722200000004
     }
   },
   {
@@ -813,10 +813,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 22.8125,
-          "width": 266.875,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 272.390625,
+          "height": 41
         },
         "text": "rohan.verma1@sample-inbox-1.test",
         "category": "email",
@@ -824,24 +824,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5223.556899999996,
-      "recognize": 907.6602999999886,
-      "total": 6140.543799999985
+      "detect": 5376.283100000001,
+      "recognize": 658.7685999999812,
+      "total": 6429.335300000006
     }
   },
   {
@@ -850,10 +852,10 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 22.8125,
-          "width": 252.8125,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 259.84375,
+          "height": 41
         },
         "text": "ananya.iyer2@mockdomain-2.test",
         "category": "email",
@@ -861,24 +863,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5569.2513000000035,
-      "recognize": 942.8029999999853,
-      "total": 6521.543200000015
+      "detect": 5342.377099999983,
+      "recognize": 582.2271999999939,
+      "total": 6228.348499999993
     }
   },
   {
@@ -887,10 +891,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 126.25,
-          "height": 65.3125
+          "x": 14,
+          "y": 14,
+          "width": 131,
+          "height": 74
         },
         "text": "karan.mehta3@ | testcorp-3.test",
         "category": "email",
@@ -898,24 +902,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 98.4375,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5635.3404000000155,
-      "recognize": 844.7409000000043,
-      "total": 6488.601699999999
+      "detect": 4934.630499999999,
+      "recognize": 466.5501000000222,
+      "total": 5666.0083999999915
     }
   },
   {
@@ -924,35 +930,36 @@
     "blocks": [
       {
         "box": {
-          "x": 21.25,
-          "y": 21.25,
-          "width": 152.8125,
-          "height": 26.25
+          "x": 24,
+          "y": 24,
+          "width": 144.1875,
+          "height": 14
         },
-        "text": "divya.nair4@ | ample-mail-4.test",
-        "category": "email",
-        "lineCount": 2
+        "text": "divyanair4@examle-mil-4test",
+        "category": null
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 59.375,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 50,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 1,
+    "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5525.298299999995,
-      "recognize": 619.6616000000213,
-      "total": 6153.213599999988
+      "detect": 5367.708000000013,
+      "recognize": 471.2460999999894,
+      "total": 6191.972199999989
     }
   },
   {
@@ -961,35 +968,37 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 22.8125,
-          "width": 240.3125,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 246.453125,
+          "height": 41
         },
-        "text": "arjun.rao5@ sample-inbox-5.test",
+        "text": "arjun.rao5@sample-inbox-5.test",
         "category": "email",
         "lineCount": 1
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5231.808500000014,
-      "recognize": 885.9554000000062,
-      "total": 6127.817499999976
+      "detect": 4938.233500000002,
+      "recognize": 464.68760000000475,
+      "total": 5693.636999999988
     }
   },
   {
@@ -998,34 +1007,37 @@
     "blocks": [
       {
         "box": {
-          "x": 156.25,
-          "y": 31.25,
-          "width": 14.0625,
-          "height": 4.6875
+          "x": 14,
+          "y": 14,
+          "width": 170.8125,
+          "height": 34
         },
-        "text": "6.test",
-        "category": null
+        "text": "meera.pilai@mockdomain6.tet",
+        "category": "email",
+        "lineCount": 1
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 59.375,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 50,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
-    "maskedRegionCount": 0,
+    "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5620.9922999999835,
-      "recognize": 500.4655999999959,
-      "total": 6133.438900000008
+      "detect": 5022.686099999992,
+      "recognize": 509.3738000000012,
+      "total": 5815.343699999998
     }
   },
   {
@@ -1034,10 +1046,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 121.5625,
-          "height": 65.3125
+          "x": 14,
+          "y": 14,
+          "width": 127.390625,
+          "height": 74
         },
         "text": "vikram.shah7@ | testcorp-7.test",
         "category": "email",
@@ -1045,24 +1057,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 98.4375,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 90,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 3,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5472.017399999982,
-      "recognize": 814.1794999999984,
-      "total": 6294.882000000012
+      "detect": 5038.27429999999,
+      "recognize": 446.80469999997877,
+      "total": 5747.412000000011
     }
   },
   {
@@ -1071,10 +1085,10 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 21.25,
-          "width": 252.8125,
-          "height": 32.5
+          "x": 14,
+          "y": 14,
+          "width": 258.3125,
+          "height": 41
         },
         "text": "ishita.bose8@example-mail-8.test",
         "category": "email",
@@ -1082,21 +1096,21 @@
       },
       {
         "box": {
-          "x": 18.125,
-          "y": 55.625,
-          "width": 277.8125,
-          "height": 30.9375
+          "x": 14,
+          "y": 47,
+          "width": 284.640625,
+          "height": 41
         },
-        "text": "296 Foxglove Terrace, Bellcross 88889",
+        "text": "296 Foxglove Terace, Bellcross 88889",
         "category": "address",
         "lineCount": 1
       },
       {
         "box": {
-          "x": 18.125,
-          "y": 88.4375,
-          "width": 134.0625,
-          "height": 29.375
+          "x": 14,
+          "y": 80,
+          "width": 138.828125,
+          "height": 41
         },
         "text": "+91 9754320988",
         "category": "phone",
@@ -1104,24 +1118,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 132.8125,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 123,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 3,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 4,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5300.834000000003,
-      "recognize": 1564.1713000000163,
-      "total": 6873.213199999998
+      "detect": 4819.961299999995,
+      "recognize": 1151.939400000003,
+      "total": 6251.366699999984
     }
   },
   {
@@ -1130,10 +1146,10 @@
     "blocks": [
       {
         "box": {
-          "x": 357.1875,
-          "y": 29.0625,
-          "width": 288.75,
-          "height": 30.9375
+          "x": 353.65625,
+          "y": 23,
+          "width": 292.671875,
+          "height": 39
         },
         "text": "aditya.kulkarni9@sample-inbox-9.test",
         "category": "email",
@@ -1141,24 +1157,26 @@
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 76.5625,
-          "width": 120.3125,
-          "height": 10.9375
+          "x": 24,
+          "y": 71,
+          "width": 121.96875,
+          "height": 19
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5071.3625000000175,
-      "recognize": 916.8564000000188,
-      "total": 5996.820100000012
+      "detect": 5406.214899999992,
+      "recognize": 709.9527999999991,
+      "total": 6463.436999999976
     }
   },
   {
@@ -1167,10 +1185,10 @@
     "blocks": [
       {
         "box": {
-          "x": 18.125,
-          "y": 22.8125,
-          "width": 154.375,
-          "height": 29.375
+          "x": 14,
+          "y": 14,
+          "width": 161.0625,
+          "height": 41
         },
         "text": "Order #9876543210",
         "category": "phone",
@@ -1178,24 +1196,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 4989.797099999996,
-      "recognize": 546.756400000013,
-      "total": 5544.237499999988
+      "detect": 4865.87089999998,
+      "recognize": 380.12330000000657,
+      "total": 5530.788300000015
     }
   },
   {
@@ -1204,10 +1224,10 @@
     "blocks": [
       {
         "box": {
-          "x": 16.5625,
-          "y": 21.25,
-          "width": 159.0625,
-          "height": 30.9375
+          "x": 14,
+          "y": 14,
+          "width": 162.3125,
+          "height": 41
         },
         "text": "Ref No. 4455667788",
         "category": "phone",
@@ -1215,24 +1235,26 @@
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 1,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5461.536400000012,
-      "recognize": 625.0204000000085,
-      "total": 6095.357099999994
+      "detect": 5609.8168000000005,
+      "recognize": 457.1561999999976,
+      "total": 6429.371800000023
     }
   },
   {
@@ -1241,34 +1263,36 @@
     "blocks": [
       {
         "box": {
-          "x": 26.5625,
-          "y": 32.8125,
-          "width": 240.625,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 246.484375,
+          "height": 21
         },
-        "text": "The Old Mill Bakery, Founded 1958",
+        "text": "The Old Mil Bakery, Founded 1958",
         "category": null
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5228.181899999996,
-      "recognize": 984.6690000000235,
-      "total": 6223.516399999993
+      "detect": 5309.3994999999995,
+      "recognize": 512.6867999999959,
+      "total": 6143.060100000002
     }
   },
   {
@@ -1277,34 +1301,36 @@
     "blocks": [
       {
         "box": {
-          "x": 26.5625,
-          "y": 32.8125,
-          "width": 185.9375,
-          "height": 9.375
+          "x": 24,
+          "y": 24,
+          "width": 192.265625,
+          "height": 21
         },
         "text": "Riverside Bookstore & Cafe",
         "category": null
       },
       {
         "box": {
-          "x": 26.5625,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5122.64929999999,
-      "recognize": 675.1722000000009,
-      "total": 5807.130999999994
+      "detect": 4918.664199999999,
+      "recognize": 443.26579999999376,
+      "total": 5682.625300000014
     }
   },
   {
@@ -1313,34 +1339,36 @@
     "blocks": [
       {
         "box": {
-          "x": 29.6875,
-          "y": 32.8125,
-          "width": 209.375,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 217.53125,
+          "height": 21
         },
         "text": "@sample_user posted a review",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5138.723899999983,
-      "recognize": 672.6038999999873,
-      "total": 5818.945999999996
+      "detect": 5084.0859000000055,
+      "recognize": 534.2856000000029,
+      "total": 5943.32150000002
     }
   },
   {
@@ -1349,34 +1377,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 220.3125,
-          "height": 12.5
+          "x": 24,
+          "y": 24,
+          "width": 227.984375,
+          "height": 21
         },
         "text": "Contact @support_desk for help",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 4935.7629000000015,
-      "recognize": 705.797499999986,
-      "total": 5649.706900000019
+      "detect": 4853.943699999974,
+      "recognize": 526.8447999999917,
+      "total": 5734.165000000008
     }
   },
   {
@@ -1385,34 +1415,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 187.5,
-          "height": 9.375
+          "x": 24,
+          "y": 24,
+          "width": 194.484375,
+          "height": 21
         },
         "text": "Total: 411045 items in stock",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5380.406900000002,
-      "recognize": 718.4990000000107,
-      "total": 6107.079200000007
+      "detect": 5441.671500000026,
+      "recognize": 476.8136999999988,
+      "total": 6182.958799999993
     }
   },
   {
@@ -1421,34 +1453,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 170.3125,
-          "height": 9.375
+          "x": 24,
+          "y": 24,
+          "width": 176.46875,
+          "height": 21
         },
         "text": "Invoice total 560034.00",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 4958.429899999988,
-      "recognize": 735.7251000000106,
-      "total": 5703.031500000012
+      "detect": 4974.286400000012,
+      "recognize": 459.68189999999595,
+      "total": 5727.149399999995
     }
   },
   {
@@ -1457,34 +1491,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 437.5,
-          "height": 12.5
+          "x": 24,
+          "y": 24,
+          "width": 445.015625,
+          "height": 21
         },
-        "text": "Your order has shipped and will arrive within 3-5 business days.",
+        "text": "Your order has shipped and willarrive within 35 busines days.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5375.141600000003,
-      "recognize": 1098.2969999999914,
-      "total": 6483.478399999993
+      "detect": 5023.720499999996,
+      "recognize": 789.5485000000044,
+      "total": 6120.823799999984
     }
   },
   {
@@ -1493,34 +1529,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 304.6875,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 310.671875,
+          "height": 21
         },
         "text": "Thank you for subscribing to our newsletter.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5052.294500000018,
-      "recognize": 835.0246000000043,
-      "total": 5895.443400000018
+      "detect": 5371.501500000013,
+      "recognize": 683.3103999999876,
+      "total": 6398.324599999993
     }
   },
   {
@@ -1529,34 +1567,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 354.6875,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 363.03125,
+          "height": 21
         },
         "text": "This product is made from 100% recycled materials.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5048.602100000018,
-      "recognize": 1100.314400000003,
-      "total": 6157.064600000012
+      "detect": 5083.10070000001,
+      "recognize": 718.9965000000084,
+      "total": 6080.094600000011
     }
   },
   {
@@ -1565,34 +1605,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 262.5,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 271.140625,
+          "height": 21
         },
         "text": "Free returns within 30 days of delivery.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5506.163499999995,
-      "recognize": 793.0181999999913,
-      "total": 6307.762699999992
+      "detect": 5539.641900000017,
+      "recognize": 660.4557999999961,
+      "total": 6564.56759999998
     }
   },
   {
@@ -1601,34 +1643,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 371.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 381.3125,
+          "height": 21
         },
         "text": "Our support team is available Monday through Friday.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 121.875,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5640.175799999997,
-      "recognize": 1302.8572999999742,
-      "total": 6952.099299999973
+      "detect": 5207.296000000002,
+      "recognize": 756.0552000000025,
+      "total": 6234.2353
     }
   },
   {
@@ -1637,34 +1681,36 @@
     "blocks": [
       {
         "box": {
-          "x": 28.125,
-          "y": 32.8125,
-          "width": 315.625,
-          "height": 10.9375
+          "x": 24,
+          "y": 24,
+          "width": 323.578125,
+          "height": 21
         },
-        "text": "Battery life: up to 12 hours on a single charge.",
+        "text": "Battery life up to 12 hours on a single charge.",
         "category": null
       },
       {
         "box": {
-          "x": 28.125,
-          "y": 65.625,
-          "width": 123.4375,
-          "height": 10.9375
+          "x": 24,
+          "y": 57,
+          "width": 121.46875,
+          "height": 21
         },
         "text": "Shipping address",
         "category": null
       }
     ],
     "maskedRegionCount": 0,
+    "unresolvedCoverageRegionCount": 0,
+    "structuralLineCount": 2,
     "imageSize": {
       "width": 1000,
       "height": 800
     },
     "timingMs": {
-      "detect": 5023.6963000000105,
-      "recognize": 908.1551999999792,
-      "total": 5940.400399999984
+      "detect": 5307.709700000007,
+      "recognize": 628.2297000000253,
+      "total": 6290.997400000022
     }
   }
 ]

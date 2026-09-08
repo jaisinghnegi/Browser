@@ -2,8 +2,21 @@
 // against the frozen 44-fixture set. No extension/server code involved; no upload happens
 // anywhere in this script. Produces fixtures/phase2/results/<id>.json (per-fixture pipeline
 // output) and fixtures/phase2/results/<id>-redacted.png (the actual redacted bytes).
+//
+// Architecture (revised): DOM structural text regions -- generic leaf elements with visible
+// text, measured via getClientRects(), the exact same technique the ground-truth tooling uses
+// -- are the PRIMARY source of "where is there text to check", not the vision detector's
+// connected components. This is not GT-derived (no data-gt-*/labels/categories are read; only
+// generic DOM structure -- any page would produce the same kind of list) and it fixes the
+// class of failure "the detector never fired on this region at all" by construction: OCR/
+// classification runs directly on every structural text region regardless of what the
+// detector found there. The vision detector becomes a secondary cross-check: any detector
+// component that does NOT overlap any structural region at all is content structure can't
+// explain (e.g. canvas-rendered text) and is conservatively masked as "unresolved coverage"
+// rather than ignored.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
 import * as ort from 'onnxruntime-web/wasm';
 import { openImageOpsPage, closeImageOps, loadAndPreprocessForDetector, cropAndPreprocessForRecognizer, drawRedactedImage } from './image-ops.mjs';
 import { connectedComponents, groupIntoLines, expandBox } from './geometry.mjs';
@@ -17,6 +30,9 @@ const DETECT_THRESHOLD = 0.3;
 // ascender area), by several px at this rendering size -- 4px left a ~3px gap versus measured
 // ground truth on tuning samples; 10px closes it with margin to spare.
 const MASK_MARGIN_PX = 10;
+// A detector component must overlap SOME structural text box by at least this fraction of its
+// own area to count as "explained by DOM structure"; below that, it's unresolved coverage.
+const UNRESOLVED_OVERLAP_MIN_FRACTION = 0.1;
 
 ort.env.wasm.numThreads = 1;
 ort.env.logLevel = 'error';
@@ -39,10 +55,40 @@ try {
 
 const outDir = new URL('fixtures/phase2/results/', root);
 await mkdir(outDir, { recursive: true });
-const page = await openImageOpsPage();
+const opsPage = await openImageOpsPage();
+const domBrowser = await chromium.launch();
+
+/** Generic DOM structural query: every leaf element (no element children) with non-empty
+ * rendered text, and its real per-line CSS layout boxes. Reads nothing but standard DOM APIs --
+ * no data-gt- / label / category attributes exist on these clean pages at all. */
+async function structuralTextBoxes(entry) {
+  const context = await domBrowser.newContext({
+    viewport: { width: entry.referenceViewport.width, height: entry.referenceViewport.height },
+    deviceScaleFactor: entry.referenceViewport.devicePixelRatio,
+  });
+  const page = await context.newPage();
+  await page.goto(new URL(`fixtures/phase2/pages/${entry.id}.html`, root).href);
+  const leaves = await page.$$eval('body *', nodes => nodes
+    .filter(el => el.children.length === 0 && el.textContent && el.textContent.trim().length > 0)
+    .map(el => {
+      const rects = [...el.getClientRects()]
+        .map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height }))
+        .filter(r => r.width > 0 && r.height > 0);
+      return { text: el.textContent.replace(/\s+/g, ' ').trim(), rects };
+    })
+    .filter(e => e.rects.length > 0));
+  await context.close();
+  const dpr = entry.referenceViewport.devicePixelRatio;
+  // Scale CSS-pixel DOM boxes to physical-pixel screenshot space (matches the ground-truth
+  // tooling's own convention -- see measure-phase2-fixtures.mjs).
+  return leaves.map(l => ({
+    text: l.text,
+    lines: l.rects.map(r => ({ x: r.x * dpr, y: r.y * dpr, width: r.width * dpr, height: r.height * dpr })),
+  }));
+}
 
 async function runDetector(base64Png) {
-  const pre = await loadAndPreprocessForDetector(page, base64Png);
+  const pre = await loadAndPreprocessForDetector(opsPage, base64Png);
   const tensor = new ort.Tensor('float32', Float32Array.from(pre.input), [1, 3, pre.height, pre.width]);
   const result = await detectorSession.run({ [detectorSession.inputNames[0]]: tensor });
   const output = result[detectorSession.outputNames[0]];
@@ -62,7 +108,7 @@ async function runDetector(base64Png) {
 }
 
 async function runRecognizer(base64Png, box) {
-  const pre = await cropAndPreprocessForRecognizer(page, base64Png, box);
+  const pre = await cropAndPreprocessForRecognizer(opsPage, base64Png, box);
   const tensor = new ort.Tensor('float32', Float32Array.from(pre.input), [1, 3, pre.targetHeight, pre.targetWidth]);
   const result = await recognizerSession.run({ [recognizerSession.inputNames[0]]: tensor });
   const output = result[recognizerSession.outputNames[0]];
@@ -71,6 +117,12 @@ async function runRecognizer(base64Png, box) {
 }
 
 const canonical = s => s.replace(/\s+/g, ' ').trim();
+const boxArea = b => Math.max(0, b.width) * Math.max(0, b.height);
+function overlapArea(a, b) {
+  const x = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+  const y = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
+  return x * y;
+}
 
 const results = [];
 for (const entry of manifest) {
@@ -84,47 +136,46 @@ for (const entry of manifest) {
     const detectStart = performance.now();
     const det = await runDetector(base64Png);
     detectMs = performance.now() - detectStart;
-    const components = connectedComponents(det.mask, det.mapWidth, det.mapHeight);
-    const lines = groupIntoLines(components);
-    // Transform lines to full-resolution pixel space (per-axis factors -- Phase 2 plan §3's
-    // correction: independent per-axis scale, not one nominal `scale`) before cropping/OCR,
-    // so recognition and grouping both operate in real pixel space.
-    const fullLines = lines
-      .map(l => ({ x: l.x * det.scaleX, y: l.y * det.scaleY, width: l.width * det.scaleX, height: l.height * det.scaleY }))
-      .filter(l => l.width > 2 && l.height > 2) // drop sub-pixel-scale noise, not "small text" -- see plan §3's min-area rule
-      .sort((a, b) => a.y - b.y);
+    const components = connectedComponents(det.mask, det.mapWidth, det.mapHeight)
+      .map(c => ({ x: c.x * det.scaleX, y: c.y * det.scaleY, width: c.width * det.scaleX, height: c.height * det.scaleY }))
+      .filter(c => c.width > 2 && c.height > 2);
 
-    // OCR every detected line individually -- this fixture set's uniform CSS spacing (every
-    // region div uses the same margin) means adjacent-DOM-element gaps and unrelated-element
-    // gaps aren't geometrically distinguishable, so grouping-by-proximity alone (tried first,
-    // see git history) can't tell a split phone fragment from an unrelated form label sitting
-    // at the same visual distance. Grouping is text-driven instead: classify each line alone,
-    // then only merge adjacent lines when doing so is what makes classification succeed.
+    const structural = await structuralTextBoxes(entry);
+    // Flatten to one entry per rendered line (a multi-line leaf produces one entry per line,
+    // exactly like the ground-truth tooling), sorted top-to-bottom.
+    const structuralLines = structural.flatMap(s => s.lines.map(box => ({ box, sourceText: s.text })))
+      .sort((a, b) => a.box.y - b.box.y);
+
+    // OCR every structural line directly -- this is what fixes "the detector never fired on
+    // this region" as a class, not just this fixture set's two known misses: recognition no
+    // longer depends on the detector having proposed the crop location at all.
     const recognized = [];
     const recognizeStart = performance.now();
-    for (const line of fullLines) {
-      const rec = await runRecognizer(base64Png, expandBox(line, MASK_MARGIN_PX / 2));
-      recognized.push({ box: line, text: canonical(rec.text), category: null, groupWith: null, annexed: false });
+    for (const line of structuralLines) {
+      const rec = await runRecognizer(base64Png, expandBox(line.box, MASK_MARGIN_PX / 2));
+      recognized.push({ box: line.box, text: canonical(rec.text), category: null, groupWith: null, annexed: false });
     }
     recognizeMs = performance.now() - recognizeStart;
     for (const r of recognized) r.category = classify(r.text);
 
     // Forward-merge pass: two adjacent, individually-unclassified lines whose concatenation
     // classifies are almost certainly one split entity (Phase 2 labeled-set spec §7's
-    // split/groupId case) -- e.g. this set's own 5-char split phone fragments.
+    // split/groupId case) -- e.g. this set's own 5-char split phone fragments. Tried both
+    // space-joined and directly-joined: a fragment can already carry its own separator
+    // character (e.g. a dashed phone split as "98888" / "-88889"), in which case inserting an
+    // extra space produces two separator characters in a row and fails classification even
+    // though the underlying value is intact.
     for (let i = 0; i < recognized.length - 1; i++) {
       const a = recognized[i], b = recognized[i + 1];
       if (a.category || b.category || a.groupWith !== null || b.groupWith !== null) continue;
-      const merged = classify(canonical(`${a.text} ${b.text}`));
+      const merged = classify(canonical(`${a.text}${b.text}`)) ?? classify(canonical(`${a.text} ${b.text}`));
       if (merged) { a.category = merged; a.groupWith = i + 1; b.groupWith = i; }
     }
 
     // Backward-annexation pass: a classified line's immediately preceding, still-unclaimed
     // line is masked along with it without needing its own text to classify -- this is how a
-    // name directly above an address gets covered (Phase 2 plan §5: "a name adjacent to an
-    // address block is address-block content, not a separately classified category"). Looking
-    // backward only (never forward) is what keeps this from also annexing an unrelated
-    // trailing label such as this fixture's "Shipping address" input caption.
+    // name directly above an address gets covered (Phase 2 plan §5). Backward-only keeps this
+    // from also annexing an unrelated trailing label.
     const ANNEX_MAX_GAP_PX = 40;
     for (let i = 0; i < recognized.length; i++) {
       if (!recognized[i].category || recognized[i].annexed) continue;
@@ -157,13 +208,31 @@ for (const entry of manifest) {
       maskedRegions.push(maskBox);
     }
 
-    const redactedDataUrl = await drawRedactedImage(page, base64Png, maskedRegions);
+    // Unresolved coverage: any vision-detected component structural DOM analysis can't explain
+    // at all (no meaningful overlap with any structural text box) is content structure doesn't
+    // account for -- e.g. canvas/shadow-DOM/generated content. Conservatively masked rather
+    // than silently trusted as "not text" or silently trusted as "already handled elsewhere".
+    const unresolvedRegions = [];
+    for (const comp of components) {
+      const compArea = boxArea(comp);
+      if (compArea === 0) continue;
+      const explained = structuralLines.some(l => overlapArea(comp, l.box) / compArea >= UNRESOLVED_OVERLAP_MIN_FRACTION);
+      if (!explained) {
+        const maskBox = expandBox(comp, MASK_MARGIN_PX);
+        unresolvedRegions.push(maskBox);
+        maskedRegions.push(maskBox);
+      }
+    }
+
+    const redactedDataUrl = await drawRedactedImage(opsPage, base64Png, maskedRegions);
     const redactedPng = Buffer.from(redactedDataUrl.split(',')[1], 'base64');
     await writeFile(fileURLToPath(new URL(`${entry.id}-redacted.png`, outDir)), redactedPng);
 
     outcome = {
       id: entry.id, status: 'processed', blocks: blockResults,
       maskedRegionCount: maskedRegions.length,
+      unresolvedCoverageRegionCount: unresolvedRegions.length,
+      structuralLineCount: structuralLines.length,
       imageSize: { width: det.naturalWidth, height: det.naturalHeight },
       timingMs: { detect: detectMs, recognize: recognizeMs, total: performance.now() - fixtureStart },
     };
@@ -174,10 +243,11 @@ for (const entry of manifest) {
       timingMs: { total: performance.now() - fixtureStart } };
   }
   results.push(outcome);
-  console.log(`${entry.id}: ${outcome.status}${outcome.maskedRegionCount !== undefined ? ` (${outcome.maskedRegionCount} masked regions)` : ''}`);
+  console.log(`${entry.id}: ${outcome.status}${outcome.maskedRegionCount !== undefined ? ` (${outcome.maskedRegionCount} masked, ${outcome.unresolvedCoverageRegionCount} unresolved)` : ''}`);
 }
 
-await page.close();
+await opsPage.close();
 await closeImageOps();
+await domBrowser.close();
 await writeFile(fileURLToPath(new URL('fixtures/phase2/results/pipeline-output.json', root)), JSON.stringify(results, null, 2) + '\n');
 console.log(`\nProcessed ${results.length} fixtures: ${results.filter(r => r.status === 'processed').length} ok, ${results.filter(r => r.status === 'failed-closed').length} failed-closed.`);

@@ -20,7 +20,7 @@
     {
       "id": "address-tuning-01",
       "outcome": "processed",
-      "maskedRegionCount": 1,
+      "maskedRegionCount": 2,
       "regions": [
         {
           "category": "address",
@@ -78,7 +78,7 @@
     {
       "id": "address-tuning-05",
       "outcome": "processed",
-      "maskedRegionCount": 1,
+      "maskedRegionCount": 2,
       "regions": [
         {
           "category": "address",
@@ -136,7 +136,7 @@
     {
       "id": "address-holdout-09",
       "outcome": "processed",
-      "maskedRegionCount": 1,
+      "maskedRegionCount": 2,
       "regions": [
         {
           "category": "address",
@@ -263,19 +263,19 @@
     {
       "id": "phone-holdout-09",
       "outcome": "processed",
-      "maskedRegionCount": 0,
+      "maskedRegionCount": 1,
       "regions": [
         {
           "category": "phone",
           "text": "98888",
           "groupId": "phone-holdout-09-g0",
-          "exposed": true
+          "exposed": false
         },
         {
           "category": "phone",
           "text": "-88889",
           "groupId": "phone-holdout-09-g0",
-          "exposed": true
+          "exposed": false
         }
       ]
     },
@@ -347,12 +347,12 @@
     {
       "id": "email-tuning-04",
       "outcome": "processed",
-      "maskedRegionCount": 1,
+      "maskedRegionCount": 0,
       "regions": [
         {
           "category": "email",
           "text": "divya.nair4@example-mail-4.test",
-          "exposed": false
+          "exposed": true
         }
       ]
     },
@@ -371,12 +371,12 @@
     {
       "id": "email-holdout-06",
       "outcome": "processed",
-      "maskedRegionCount": 0,
+      "maskedRegionCount": 1,
       "regions": [
         {
           "category": "email",
           "text": "meera.pillai6@mockdomain-6.test",
-          "exposed": true
+          "exposed": false
         }
       ]
     },
@@ -606,19 +606,19 @@
     "latencyMs": {
       "sampleCount": 44,
       "detect": {
-        "mean": 5357.281845454546,
-        "max": 5865.811800000003,
-        "min": 4900.9035
+        "mean": 5143.444554545455,
+        "max": 5885.777999999999,
+        "min": 4515.468999999999
       },
       "recognize": {
-        "mean": 836.1478863636368,
-        "max": 1626.2801000000036,
-        "min": 455.78740000000107
+        "mean": 527.6311181818189,
+        "max": 1151.939400000003,
+        "min": 163.3932000000059
       },
       "total": {
-        "mean": 6203.07120681818,
-        "max": 6952.099299999973,
-        "min": 5544.237499999988
+        "mean": 5985.7159477272735,
+        "max": 6564.56759999998,
+        "min": 5402.747399999997
       }
     },
     "totalSamples": 44,
@@ -639,10 +639,9 @@
     "fixturesProcessed": 44,
     "fixturesWithheld": 0,
     "affectedSampleIds": [
-      "phone-holdout-09",
-      "email-holdout-06"
+      "email-tuning-04"
     ],
-    "affectedSampleCount": 2,
+    "affectedSampleCount": 1,
     "requiredSecretRegionsByCategory": {
       "name-in-address": {
         "total": 5,
@@ -654,7 +653,7 @@
       },
       "phone": {
         "total": 14,
-        "exposed": 2
+        "exposed": 0
       },
       "email": {
         "total": 12,
@@ -664,14 +663,14 @@
     "requiredSecretRegionsBySet": {
       "tuning": {
         "total": 25,
-        "exposed": 0
+        "exposed": 1
       },
       "holdout": {
         "total": 18,
-        "exposed": 3
+        "exposed": 0
       }
     },
-    "requiredSecretRegionsExposedTotal": 3,
+    "requiredSecretRegionsExposedTotal": 1,
     "overallLeakageFound": true,
     "ambiguousShapedMaskRate": 0.25,
     "benignFalsePositiveRate": 0,
@@ -686,7 +685,7 @@
       },
       "phone": {
         "total": 14,
-        "exposed": 2
+        "exposed": 0
       },
       "email": {
         "total": 12,
@@ -704,30 +703,18 @@
     "leakageBySetAllGroups": {
       "tuning": {
         "total": 32,
-        "exposed": 5
+        "exposed": 6
       },
       "holdout": {
         "total": 25,
-        "exposed": 10
+        "exposed": 7
       }
     },
     "exposedRegionDetails": [
       {
-        "fixture": "phone-holdout-09",
-        "category": "phone",
-        "text": "98888",
-        "requiredSecret": true
-      },
-      {
-        "fixture": "phone-holdout-09",
-        "category": "phone",
-        "text": "-88889",
-        "requiredSecret": true
-      },
-      {
-        "fixture": "email-holdout-06",
+        "fixture": "email-tuning-04",
         "category": "email",
-        "text": "meera.pillai6@mockdomain-6.test",
+        "text": "divya.nair4@example-mail-4.test",
         "requiredSecret": true
       },
       {
