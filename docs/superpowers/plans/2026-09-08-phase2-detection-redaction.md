@@ -109,20 +109,29 @@ implementation:
     (Chinese+English) recognizer is used rather than a Latin-only one because no v4 Latin-only
     recognizer artifact exists in this repo; its dictionary is a superset that still covers the
     ASCII/digits/punctuation needed for §5's bounded categories.
-  - Dictionary: PaddleOCR's `ppocr_keys_v1.txt` —
-    https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/release/2.7/ppocr/utils/ppocr_keys_v1.txt
+  - Dictionary: PaddleOCR's `ppocr_keys_v1.txt`, pinned to the commit that last touched it on
+    `release/2.7` (not the branch head) —
+    https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/338ba3ee4a0208cee354cd3b7d2c93b320e0ea54/ppocr/utils/ppocr_keys_v1.txt
     (26,249 bytes, SHA256
     `28b2362ad4ab2dc38769aa72feb535e3a9ddb3fd2a7585a05920e6393b1dc7f7`, 6,623 lines), Apache-2.0.
-  - Decode: CTC greedy decode, per PaddleOCR's standard recognition head for this model family
-    (to be double-checked against the model's actual output shape once integrated, not assumed
-    blind) — output is expected to be `[1, T, 6625]` (6,623 dictionary entries + CTC blank +
-    the trailing space class PaddleOCR appends), argmax per timestep, then CTC blank/repeat
-    collapse.
-  - Preprocessing: PaddleOCR recognition preprocessing differs from the detector's — fixed
-    height (32px) with variable width scaled to preserve aspect ratio, BGR, normalized to
-    `[-1, 1]` via `(pixel/255 - 0.5) / 0.5` per PaddleOCR's rec pipeline (distinct from the
-    detector's ImageNet mean/std) — to be verified against the model's actual expected input
-    once loaded, not assumed from documentation alone.
+  - **I/O confirmed by actually loading the model** (`onnxruntime-web` wasm backend, local
+    smoke test — not assumed from documentation): input `x`, `[1, 3, 48, W]` — **height is
+    48px**, not 32px (upstream `release/2.7`'s `RecResizeImg: [3, 48, 320]`; the detector's
+    32px does not carry over to the recognizer, and an earlier draft of this doc/README
+    incorrectly assumed it did by analogy). Width is dynamic: `W=320→T=40`, `W=160→T=20`,
+    `W=96→T=12`, an exact 8x temporal downsample — confirms variable-width input (resize to
+    height 48, preserve aspect ratio, no fixed width required). Output `softmax_11.tmp_0`,
+    `[1, T, 6625]`, per-timestep values sum to ~1 — **the model already applies softmax**, so
+    decoding must not re-apply it. Decode: CTC greedy (argmax per timestep, blank/repeat
+    collapse) against the 6,623-entry dictionary plus blank + trailing space (6,625 total),
+    matching upstream's `CTCLabelDecode`/`use_space_char: true`.
+  - Preprocessing: BGR, normalized to `[-1, 1]` via `(pixel/255 - 0.5) / 0.5` per PaddleOCR's
+    published rec pipeline config (distinct from the detector's ImageNet mean/std) — this part
+    is taken from upstream's config, not independently confirmed the way the I/O shapes above
+    were. A real end-to-end smoke test (rendered reference string → recognized text) against a
+    labeled fixture crop is still required once recognition code exists; loading the model and
+    checking tensor shapes does not by itself prove the pixel values produce correct text. Keep
+    that smoke test local and separate from detector/classifier threshold tuning.
   - Both files will be added to `scripts/download-model.mjs` following the exact pattern
     already used for the detector (pinned hash checked before and after download, packaged
     into `dist/`, never fetched at runtime).
@@ -201,6 +210,19 @@ it changes the trust contract Phase 1 spent its whole design on. Treated accordi
   outside that known-eligible set uses full withholding unconditionally, independent of what
   the detector does or doesn't find on it. This is a conservative structural exclusion, not a
   claim that the detector "understands" faces/maps/scripts it was never built to handle.
+- **How the runtime actually checks eligibility, without touching ground truth**: the same
+  mechanism Phase 1 already uses — a hardcoded origin+path allowlist checked by the content
+  script before anything runs (today: `location.href !== 'http://localhost:8171/fixture'`
+  throws). Phase 2 extends this to a small, explicit, checked-in list of known fixture paths
+  (still all `localhost:8171`), grown one line at a time as new fixture pages are added — never
+  derived from the sample's ground-truth labels, secret values, or a test-ID field, and never
+  read from anything the page itself asserts. This is a **runtime trust boundary** (which pages
+  the extension is willing to run detection/redaction on at all) and is deliberately the same
+  kind of check for both offline evaluation and any future non-test use — it does not get more
+  permissive outside the evaluation harness. The **tuning/holdout split** in §6 is a separate,
+  offline-only concept: a partition of that same eligible fixture set used to avoid overfitting
+  threshold choices, not a second runtime gate and not something the extension code ever
+  branches on.
 - The privacy claim stays scoped to labeled synthetic fixtures matching this list — same
   discipline as Phase 1's README, extended rather than loosened.
 

@@ -19,7 +19,9 @@ const artifacts = [
   {
     name: 'text-recognizer-dictionary.txt',
     sha256: '28b2362ad4ab2dc38769aa72feb535e3a9ddb3fd2a7585a05920e6393b1dc7f7',
-    url: 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/release/2.7/ppocr/utils/ppocr_keys_v1.txt',
+    // Pinned to the commit that last touched this file on release/2.7, not the branch head,
+    // so the URL can't silently start serving different content later.
+    url: 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/338ba3ee4a0208cee354cd3b7d2c93b320e0ea54/ppocr/utils/ppocr_keys_v1.txt',
   },
 ];
 

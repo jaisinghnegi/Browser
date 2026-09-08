@@ -31,18 +31,31 @@ code is written.
     its character dictionary is a superset that still covers the ASCII/digits/punctuation
     needed for the bounded address/phone/email categories.
 - Dictionary: PaddleOCR's `ppocr_keys_v1.txt` (6,623 entries).
-  - Source: https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.7/ppocr/utils/ppocr_keys_v1.txt
+  - Source, pinned to the commit that last touched this file on `release/2.7` (not the branch
+    head): https://github.com/PaddlePaddle/PaddleOCR/blob/338ba3ee4a0208cee354cd3b7d2c93b320e0ea54/ppocr/utils/ppocr_keys_v1.txt
   - SHA256: `28b2362ad4ab2dc38769aa72feb535e3a9ddb3fd2a7585a05920e6393b1dc7f7`.
   - License: Apache-2.0 (PaddleOCR).
   - Not committed to this repo (downloaded like the model artifacts, see `.gitignore`) since
     it's a third-party file this project doesn't modify.
-- Expected preprocessing (PaddleOCR's recognition pipeline, distinct from the detector's):
-  fixed height 32px, width scaled to preserve aspect ratio, BGR, normalized to `[-1, 1]` via
-  `(pixel/255 - 0.5) / 0.5`. Expected output shape `[1, T, 6625]` (6,623 dictionary entries +
-  CTC blank + PaddleOCR's trailing space class), decoded via CTC greedy decode with
-  blank/repeat collapse. Both the preprocessing and output-shape assumptions are to be
-  verified against the model's actual behavior once integration starts, not taken on faith
-  from documentation — see the Phase 2 plan doc for details.
+- Preprocessing and I/O, **confirmed by actually loading the model** with
+  `onnxruntime-web`'s wasm backend and running it (not assumed from documentation): input
+  tensor `x`, `[1, 3, 48, W]` (fixed height **48px** — upstream's `release/2.7` recognition
+  config (`RecResizeImg: [3, 48, 320]`) uses 48px, not the 32px this file previously and
+  incorrectly stated by analogy with the detector). Width is dynamic: `W=320` produced
+  `T=40`, `W=160` produced `T=20`, `W=96` produced `T=12` — a fixed 8x temporal downsample,
+  confirming variable-width input is supported (resize preserving aspect ratio to height 48,
+  no fixed width needed). Output `softmax_11.tmp_0`, shape `[1, T, 6625]`, and the values at
+  a given timestep sum to ~1 — **the model already applies softmax internally**, so recognition
+  code must not re-apply softmax before argmax/decoding. Decode: CTC greedy (argmax per
+  timestep, then blank/repeat collapse) against the 6,623-entry dictionary plus PaddleOCR's
+  blank and trailing space classes (6,625 total) — this matches upstream's
+  `CTCLabelDecode`/`use_space_char: true` config. BGR channel order and normalization
+  (`(pixel/255 - 0.5) / 0.5`, matching the detector's channel-order convention but a different
+  normalization range) are taken from upstream's published preprocessing config and still need
+  a real end-to-end smoke test against a rendered reference string once recognition code and a
+  labeled fixture crop exist — loading the model and checking its shapes does not by itself
+  confirm the pixel values fed in produce correct decoded text. That smoke test is local only,
+  kept separate from detector/classifier threshold tuning.
 
 Full details, redaction geometry, coordinate-transform math, and the acceptance gates this
 candidate must clear before any upload changes: [Phase 2 plan](../docs/superpowers/plans/2026-09-08-phase2-detection-redaction.md).
