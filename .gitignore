@@ -6,6 +6,7 @@ __pycache__/
 test-results/
 playwright-report/
 models/*.onnx
+models/text-recognizer-dictionary.txt
 .worktrees/
 *.log
 extension/generated/validators.js
