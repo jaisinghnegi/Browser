@@ -47,6 +47,55 @@ import { FIXTURE_URL } from './config';
         document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) !== node) throw new VisibilityError('Field not visible');
     return node;
   }
+  // Local-only structural text collection for the Phase 2 preview (extension/preview.ts) --
+  // never sent anywhere, only forwarded through background.ts to the popup's own in-memory
+  // preview. Deliberately independent of any evaluator/ground-truth helper: this reads nothing
+  // but standard DOM APIs any page exposes, the same way any real page's content would be read.
+  //
+  // Coverage gaps this does NOT attempt to solve, per design review: SVG text, <canvas>,
+  // <iframe> content, and shadow DOM are not text nodes this document can read into (a closed
+  // shadow root is undetectable by construction, not just unhandled). Rather than silently
+  // treat a page containing any of these as fully covered, their *presence* is detected and
+  // treated as "unsupported" for the whole page, falling back to no preview at all -- the
+  // browser-runtime analogue of Phase 1's full-withholding fallback, not a partial best effort.
+  // Input/textarea values and placeholders, and elements with a non-identity CSS transform
+  // (whose rendered geometry a plain getClientRects() box could misrepresent), are treated the
+  // same way.
+  function unsupportedStructuresPresent(): boolean {
+    if (document.querySelector('canvas, svg, iframe')) return true;
+    for (const el of document.querySelectorAll<HTMLElement>('*')) {
+      if (el.shadowRoot) return true;
+      if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) &&
+          (el.value !== '' || el.placeholder !== '')) return true;
+      if (getComputedStyle(el).transform !== 'none') return true;
+    }
+    return false;
+  }
+  /** Text-node-level traversal (not element-leaf-level): correctly separates mixed inline
+   * content like "Hello <b>world</b>" into its constituent text nodes via Range boundaries,
+   * rather than only seeing whole leaf elements. */
+  function collectTextRegions(): Array<{ text: string; boxes: Array<{ x: number; y: number; width: number; height: number }> }> {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!(node.textContent ?? '').trim()) return NodeFilter.FILTER_SKIP;
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script, style, noscript')) return NodeFilter.FILTER_SKIP;
+        const style = getComputedStyle(parent);
+        if (style.visibility === 'hidden' || style.display === 'none' || Number(style.opacity) === 0) return NodeFilter.FILTER_SKIP;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const regions: Array<{ text: string; boxes: Array<{ x: number; y: number; width: number; height: number }> }> = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const boxes = [...range.getClientRects()]
+        .map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height }))
+        .filter(r => r.width > 0 && r.height > 0);
+      if (boxes.length) regions.push({ text: (node.textContent ?? '').replace(/\s+/g, ' ').trim(), boxes });
+    }
+    return regions;
+  }
   function check(message: { taskId: string; observationId: string; target: string }) {
     if (observer.takeRecords().length) changed();
     const node = getField();
@@ -83,6 +132,9 @@ import { FIXTURE_URL } from './config';
       } else if (message.type === 'CANCEL') {
         if (observation?.taskId === message.taskId) observation = undefined;
         respond({ ok: true });
+      } else if (message.type === 'COLLECT_TEXT_REGIONS') {
+        if (unsupportedStructuresPresent()) { respond({ ok: true, supported: false }); return; }
+        respond({ ok: true, supported: true, regions: collectTextRegions(), devicePixelRatio });
       }
     } catch (e) {
       observation = undefined;

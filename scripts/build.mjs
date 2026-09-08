@@ -14,20 +14,29 @@ const outDir = process.env.BUILD_OUT_DIR || 'dist';
 // even then the value is baked into that specific build's files, never read at runtime.
 const port = Number(process.env.BUILD_PORT || 8171);
 
-const model = await readFile('models/text-detector.onnx').catch(() => {
-  throw new Error('Run npm run model:download before building.');
-});
-if (createHash('sha256').update(model).digest('hex') !== 'd2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9') {
-  throw new Error('Model integrity check failed.');
+async function verified(path, sha256) {
+  const data = await readFile(path).catch(() => {
+    throw new Error(`Run npm run model:download before building (missing ${path}).`);
+  });
+  if (createHash('sha256').update(data).digest('hex') !== sha256) {
+    throw new Error(`Model integrity check failed for ${path}.`);
+  }
+  return data;
 }
+await verified('models/text-detector.onnx', 'd2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9');
+// Recognizer + dictionary: packaged for the Phase 2 local sanitized preview (extension/preview.ts,
+// extension/recognize.ts) -- additive to Phase 1's detector-only gating, never part of the
+// outbound payload. See models/README.md for provenance/license/preprocessing.
+await verified('models/text-recognizer.onnx', '48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b');
+await verified('models/text-recognizer-dictionary.txt', '28b2362ad4ab2dc38769aa72feb535e3a9ddb3fd2a7585a05920e6393b1dc7f7');
 await mkdir(`${outDir}/vendor`, { recursive: true });
 await mkdir(`${outDir}/models`, { recursive: true });
 for (const file of ['popup.html', 'popup.css']) await copyFile(`extension/${file}`, `${outDir}/${file}`);
 const manifestTemplate = await readFile('extension/manifest.json', 'utf8');
 await writeFile(`${outDir}/manifest.json`, manifestTemplate.replaceAll('__PRIVACY_AGENT_PORT__', String(port)));
-await copyFile('models/text-detector.onnx', `${outDir}/models/text-detector.onnx`);
-await copyFile('models/LICENSE.apache-2.0', `${outDir}/models/LICENSE.apache-2.0`);
-await copyFile('models/README.md', `${outDir}/models/README.md`);
+for (const file of ['text-detector.onnx', 'text-recognizer.onnx', 'text-recognizer-dictionary.txt', 'LICENSE.apache-2.0', 'README.md']) {
+  await copyFile(`models/${file}`, `${outDir}/models/${file}`);
+}
 for (const file of ['ort.wasm.min.mjs', 'ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) {
   await copyFile(`node_modules/onnxruntime-web/dist/${file}`, `${outDir}/vendor/${file}`);
 }

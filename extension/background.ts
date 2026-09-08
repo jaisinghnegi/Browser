@@ -108,7 +108,18 @@ async function start(run: Run, windowId: number | undefined) {
   if (after[0]?.id !== tab.id) fail('observation-failed', 'Tab switched');
   await current(run);
   run.stage = 'vision';
-  post(run, { type: 'CAPTURE', taskId, screenshot });
+  // Local-only, additive, best-effort: feeds the popup's own in-memory Phase 2 preview
+  // (extension/preview.ts). Never part of the real gating/fill flow below, and never touches
+  // what actually reaches the planner -- a failure here degrades only the local preview, never
+  // the task itself.
+  const textRegions = await chrome.tabs.sendMessage(tab.id, { type: 'COLLECT_TEXT_REGIONS' }, { documentId: run.documentId })
+    .catch(() => ({ ok: false }));
+  post(run, {
+    type: 'CAPTURE', taskId, screenshot,
+    textRegions: textRegions?.ok && textRegions.supported
+      ? { supported: true, regions: textRegions.regions, devicePixelRatio: textRegions.devicePixelRatio }
+      : { supported: false },
+  });
 }
 async function plan(run: Run, message: { taskId: string; ok: boolean }) {
   live(run);

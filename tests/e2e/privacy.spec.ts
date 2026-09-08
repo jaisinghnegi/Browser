@@ -124,6 +124,26 @@ test('real local vision fills the intended field without planner-channel leakage
     expect(await readFile('test-results/server.log', 'utf8')).not.toContain(secret);
   }
   await info.attach('local-inference', { body: await popup.locator('#metrics').innerText(), contentType: 'text/plain' });
+
+  // Local sanitized preview (Phase 2 prototype): purely additive -- must never affect the
+  // real outbound payload (already asserted above: exactly 1 request, none of the assertions
+  // above changed) or leave a trace of the visible seeded secret anywhere client-observable.
+  // <details> is collapsed by default, so read textContent (reflects DOM state regardless of
+  // rendering) rather than innerText (requires the element to actually be laid out/visible).
+  await expect(popup.locator('#preview-status')).toContainText('Not sent', { timeout: 60_000 });
+  expect(requests).toHaveLength(1); // the preview build itself must never issue a request.
+  const previewText = (await popup.locator('#preview-status').textContent()) ?? '';
+  expect(previewText).not.toContain('71 Visible Road');
+  // A real page can legitimately land in either terminal outcome this prototype supports:
+  // actually redacted, or conservatively withheld (e.g. more structural text regions than the
+  // bounded per-preview recognition budget allows -- see extension/preview.ts's MAX_REGIONS).
+  // Both are valid; getting stuck on "Building..." past the timeout above is the only failure.
+  expect(previewText).toMatch(/region\(s\) masked locally|Preview withheld/);
+  if (previewText.includes('masked locally')) {
+    await popup.locator('details', { hasText: 'Local sanitized preview' }).locator('summary').click();
+    await expect(popup.locator('#preview-image')).toBeVisible();
+  }
+  await info.attach('local-preview-status', { body: previewText, contentType: 'text/plain' });
 });
 
 test('target replacement during delayed planning blocks the fill', async ({ demo }) => {
