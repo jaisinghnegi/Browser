@@ -14,3 +14,4 @@ fixtures/phase2/pages-labeled/
 *.log
 extension/generated/validators.js
 .cache/
+dist-review/

@@ -10,7 +10,10 @@ function busy(value: boolean) { run.disabled = value; cancel.disabled = !value; 
 run.addEventListener('click', () => {
   generation++;
   busy(true); status.textContent = 'Capturing locally…'; metrics.textContent = ''; payload.textContent = 'No request sent.';
-  port.postMessage({ type: 'START' });
+  // A toolbar-action popup reports the browser window it's anchored to here (it has no
+  // separate window of its own), which is the one activeTab was actually granted for --
+  // more reliable than the background service worker guessing "current window" itself.
+  void chrome.windows.getCurrent().then(w => port.postMessage({ type: 'START', windowId: w.id }));
 });
 cancel.addEventListener('click', () => { generation++; port.postMessage({ type: 'CANCEL' }); });
 port.onMessage.addListener(message => {

@@ -52,6 +52,15 @@ test('invalid field blocks before any upload', async ({ demo }) => {
   await expect(demo.page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
 
+test('a nonempty field is reported distinctly and blocks before any upload', async ({ demo }) => {
+  await demo.page.getByLabel('Shipping address', { exact: true }).fill('already filled');
+  await demo.popup.getByRole('button', { name: 'Run private fill' }).click();
+  await expect(demo.popup.getByRole('status')).toContainText('Blocked');
+  await expect(demo.popup.getByRole('status')).toHaveAttribute('data-reason', 'field-not-empty');
+  expect(demo.requests).toHaveLength(0);
+  await expect(demo.page.getByLabel('Shipping address', { exact: true })).toHaveValue('already filled');
+});
+
 test.describe('failed local vision', () => {
   test.use({ breakModel: true });
   test('unloadable model causes zero upload', async ({ demo }) => {

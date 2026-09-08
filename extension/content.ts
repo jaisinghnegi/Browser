@@ -21,12 +21,21 @@
   // page state" apart from "the field exists but captureVisibleTab can't see all of it" —
   // the latter is expected on a short window, not a sign the agent is broken.
   class VisibilityError extends Error {}
+  // A prior successful run already filled the field (or the demo page was reloaded with a
+  // preset value): distinguished so the user is told to refresh, not left with a generic
+  // "something's wrong" message.
+  class NonEmptyFieldError extends Error {}
+  // Tolerates a trailing slash or an accidental ?query/#hash on the URL the user actually
+  // navigated to -- still exactly one allowed path, just not fragile against how it got
+  // typed/bookmarked/pasted. Matches background.ts's normalizeFixtureUrl.
+  const normalizedHref = () => location.href.replace(/[?#].*$/, '').replace(/\/$/, '');
   function getField(): HTMLInputElement {
-    if (location.href !== 'http://localhost:8171/fixture') throw new Error('Unsupported page');
+    if (normalizedHref() !== 'http://localhost:8171/fixture') throw new Error('Unsupported page');
     const nodes = document.querySelectorAll('#shipping-address');
     const node = nodes[0];
     if (nodes.length !== 1 || !(node instanceof HTMLInputElement) || node.type !== 'text' ||
-        node.disabled || node.readOnly || node.value !== '') throw new Error('Invalid field');
+        node.disabled || node.readOnly) throw new Error('Invalid field');
+    if (node.value !== '') throw new NonEmptyFieldError('Field already has a value');
     const r = node.getBoundingClientRect();
     const style = getComputedStyle(node);
     // captureVisibleTab only captures the viewport: a partially-offscreen field means the
@@ -77,7 +86,12 @@
     } catch (e) {
       observation = undefined;
       // Only ever a fixed literal from this file's own classes, never the caught message.
-      respond({ ok: false, reason: e instanceof VisibilityError ? 'field-not-visible' : undefined });
+      respond({
+        ok: false,
+        reason: e instanceof VisibilityError ? 'field-not-visible'
+          : e instanceof NonEmptyFieldError ? 'field-not-empty'
+          : undefined,
+      });
     }
   });
 })();
