@@ -4,5 +4,15 @@
   "targetLabel": "Phone number",
   "valueRef": "PHONE_1",
   "note": "Different layout/position than address-target; tests the model reads the actual page, not a memorized single answer.",
+  "candidates": [
+    {
+      "label": "Phone number",
+      "targetRef": "target-phone-target-1",
+      "allowedValueRefs": [
+        "PHONE_1"
+      ]
+    }
+  ],
+  "prompt": "What action should be taken on this page?",
   "renderedTextForAudit": "Contact details\nSaved phone number\nREF: PHONE_1\nPhone number\nOrder summary\n\n1 item · Ships in 3-5 business days."
 }

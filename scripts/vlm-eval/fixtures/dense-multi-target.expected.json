@@ -1,0 +1,32 @@
+{
+  "action": "fill",
+  "targetDescription": "the empty \"Phone number\" text input, among several other fields/cards on a denser page",
+  "targetLabel": "Phone number",
+  "valueRef": "PHONE_1",
+  "note": "Denser layout with 3 fillable fields plus non-fillable informational cards -- tests grounding accuracy on a busier page, relevant to llama.cpp's own --image-min-tokens 1024 grounding-accuracy guidance for Qwen-VL.",
+  "candidates": [
+    {
+      "label": "Address",
+      "targetRef": "target-dense-multi-target-address",
+      "allowedValueRefs": [
+        "ADDRESS_1"
+      ]
+    },
+    {
+      "label": "Phone number",
+      "targetRef": "target-dense-multi-target-phone",
+      "allowedValueRefs": [
+        "PHONE_1"
+      ]
+    },
+    {
+      "label": "Email address",
+      "targetRef": "target-dense-multi-target-email",
+      "allowedValueRefs": [
+        "EMAIL_1"
+      ]
+    }
+  ],
+  "prompt": "Fill in the phone number field using the appropriate reference shown on the page.",
+  "renderedTextForAudit": "Account · Contact · Preferences\nNewsletter frequency\n\nWeekly digest, sent Mondays.\n\nSaved address\nREF: ADDRESS_1\nAddress\nTwo-factor authentication\n\nCurrently disabled.\n\nSaved phone\nREF: PHONE_1\nPhone number\nSaved email\nREF: EMAIL_1\nEmail address\nTheme\n\nSystem default."
+}

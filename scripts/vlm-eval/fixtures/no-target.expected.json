@@ -4,5 +4,7 @@
   "targetLabel": null,
   "valueRef": null,
   "note": "No fillable input exists on this page at all -- correct behavior is to report no valid target, not hallucinate one.",
+  "candidates": [],
+  "prompt": "What action should be taken on this page?",
   "renderedTextForAudit": "Account settings\nSaved address on file\nREF: ADDRESS_1\n\nThis page is read-only. There is no editable field on it."
 }

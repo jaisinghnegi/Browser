@@ -4,5 +4,15 @@
   "targetLabel": "Shipping address",
   "valueRef": "ADDRESS_1",
   "note": "Only fillable field on the page.",
+  "candidates": [
+    {
+      "label": "Shipping address",
+      "targetRef": "target-address-target-1",
+      "allowedValueRefs": [
+        "ADDRESS_1"
+      ]
+    }
+  ],
+  "prompt": "What action should be taken on this page?",
   "renderedTextForAudit": "Checkout\nSaved address on file\nREF: ADDRESS_1\nShipping address\nContinue"
 }

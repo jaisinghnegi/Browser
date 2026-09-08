@@ -1,0 +1,25 @@
+{
+  "action": "adapter-must-reject",
+  "targetDescription": "two distinct inputs both visibly labeled \"Address\"",
+  "targetLabel": null,
+  "valueRef": null,
+  "note": "Billing and Shipping sections both label their input \"Address\" with different references. Whatever the model picks by label text, the adapter's candidate list is genuinely ambiguous for that label -- this exercises adapter.mjs rejecting ambiguous-target-label, not the model's own judgement.",
+  "candidates": [
+    {
+      "label": "Address",
+      "targetRef": "target-duplicate-label-billing",
+      "allowedValueRefs": [
+        "ADDRESS_1"
+      ]
+    },
+    {
+      "label": "Address",
+      "targetRef": "target-duplicate-label-shipping",
+      "allowedValueRefs": [
+        "ADDRESS_2"
+      ]
+    }
+  ],
+  "prompt": "What action should be taken on this page?",
+  "renderedTextForAudit": "Billing\nSaved value\nREF: ADDRESS_1\nAddress\nShipping\nSaved value\nREF: ADDRESS_2\nAddress"
+}
