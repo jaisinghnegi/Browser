@@ -603,10 +603,47 @@
     }
   ],
   "report": {
-    "totalFixtures": 44,
+    "latencyMs": {
+      "sampleCount": 44,
+      "detect": {
+        "mean": 5357.281845454546,
+        "max": 5865.811800000003,
+        "min": 4900.9035
+      },
+      "recognize": {
+        "mean": 836.1478863636368,
+        "max": 1626.2801000000036,
+        "min": 455.78740000000107
+      },
+      "total": {
+        "mean": 6203.07120681818,
+        "max": 6952.099299999973,
+        "min": 5544.237499999988
+      }
+    },
+    "totalSamples": 44,
+    "samplesBySet": {
+      "tuning": {
+        "total": 25,
+        "secretBearing": 18,
+        "processed": 25,
+        "withheld": 0
+      },
+      "holdout": {
+        "total": 19,
+        "secretBearing": 12,
+        "processed": 19,
+        "withheld": 0
+      }
+    },
     "fixturesProcessed": 44,
     "fixturesWithheld": 0,
-    "requiredSecretLeakageByCategory": {
+    "affectedSampleIds": [
+      "phone-holdout-09",
+      "email-holdout-06"
+    ],
+    "affectedSampleCount": 2,
+    "requiredSecretRegionsByCategory": {
       "name-in-address": {
         "total": 5,
         "exposed": 0
@@ -624,7 +661,7 @@
         "exposed": 1
       }
     },
-    "requiredSecretLeakageBySet": {
+    "requiredSecretRegionsBySet": {
       "tuning": {
         "total": 25,
         "exposed": 0
@@ -634,6 +671,7 @@
         "exposed": 3
       }
     },
+    "requiredSecretRegionsExposedTotal": 3,
     "overallLeakageFound": true,
     "ambiguousShapedMaskRate": 0.25,
     "benignFalsePositiveRate": 0,

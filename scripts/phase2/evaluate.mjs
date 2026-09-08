@@ -106,28 +106,73 @@ const anyExposed = results.some(r => r.regions.some(reg => reg.exposed && REQUIR
 
 const requiredByCategory = Object.fromEntries(
   Object.entries(byCategory).filter(([cat]) => REQUIRED_SECRET_CATEGORIES.has(cat)));
-const requiredBySet = { tuning: { total: 0, exposed: 0 }, holdout: { total: 0, exposed: 0 } };
+// Named explicitly as *regions*, not samples: one address/phone/email sample can carry more
+// than one required-secret region (an address sample's own address region plus an adjacent
+// name-in-address region; a split sample's two fragment regions). Region and sample counts are
+// reported separately below so neither is mistaken for the other.
+const requiredRegionsBySet = { tuning: { total: 0, exposed: 0 }, holdout: { total: 0, exposed: 0 } };
 for (const entry of manifest) {
   const r = results.find(x => x.id === entry.id);
   for (const region of r.regions) if (REQUIRED_SECRET_CATEGORIES.has(region.category)) {
-    requiredBySet[entry.set].total++;
-    if (region.exposed) requiredBySet[entry.set].exposed++;
+    requiredRegionsBySet[entry.set].total++;
+    if (region.exposed) requiredRegionsBySet[entry.set].exposed++;
   }
 }
 
+// Sample-level denominators (a "sample" = one fixture/manifest entry = one row in
+// tuning.json/holdout.json), distinct from the region-level counts above.
+const samplesBySet = { tuning: { total: 0, secretBearing: 0, processed: 0, withheld: 0 },
+  holdout: { total: 0, secretBearing: 0, processed: 0, withheld: 0 } };
+for (const entry of manifest) {
+  const r = results.find(x => x.id === entry.id);
+  samplesBySet[entry.set].total++;
+  if (!entry.benign && !entry.hardNegative) samplesBySet[entry.set].secretBearing++;
+  samplesBySet[entry.set][r.outcome === 'processed' ? 'processed' : 'withheld']++;
+}
+const affectedSamples = results
+  .filter(r => r.regions.some(reg => reg.exposed && REQUIRED_SECRET_CATEGORIES.has(reg.category)))
+  .map(r => r.id);
+
+// Measured per-fixture stage timings from detect.mjs, reported as-is (no attribution of the
+// gap between this and Phase 1's in-browser ~20ms detector figure -- that would need actual
+// profiling this harness hasn't done, not an assumption that it's IPC/decode overhead).
+const timed = pipelineOutput.filter(r => r.timingMs);
+const stats = values => values.length
+  ? { mean: values.reduce((a, b) => a + b, 0) / values.length, max: Math.max(...values), min: Math.min(...values) }
+  : null;
+const latencyMs = {
+  sampleCount: timed.length,
+  detect: stats(timed.filter(r => r.timingMs.detect !== undefined).map(r => r.timingMs.detect)),
+  recognize: stats(timed.filter(r => r.timingMs.recognize !== undefined).map(r => r.timingMs.recognize)),
+  total: stats(timed.map(r => r.timingMs.total)),
+};
+
 const report = {
-  totalFixtures: manifest.length,
+  // This harness's own measured latency (Node + Playwright IPC to a real headless Chromium
+  // page for every image op, plus in-process ONNX inference) -- not in-extension performance.
+  latencyMs,
+  // --- Sample-level (one row per fixture/manifest entry; matches tuning.json/holdout.json) ---
+  totalSamples: manifest.length,
+  samplesBySet, // { tuning: {total, secretBearing, processed, withheld}, holdout: {...} }
   fixturesProcessed: results.filter(r => r.outcome === 'processed').length,
   fixturesWithheld: results.filter(r => r.outcome === 'withheld').length,
-  // The headline privacy numbers: only address/phone/email/name-in-address count.
-  requiredSecretLeakageByCategory: requiredByCategory,
-  requiredSecretLeakageBySet: requiredBySet,
+  // Samples (not regions) with at least one exposed required-secret region -- 2 samples can
+  // still mean 3 exposed regions if one sample has more than one (e.g. a split fragment pair).
+  affectedSampleIds: affectedSamples,
+  affectedSampleCount: affectedSamples.length,
+
+  // --- Region-level (a sample can carry >1 ground-truth region: address+name-in-address,
+  // split fragments, or a mixed-category page's extra regions) ---
+  requiredSecretRegionsByCategory: requiredByCategory, // { address: {total, exposed}, ... }
+  requiredSecretRegionsBySet: requiredRegionsBySet, // { tuning: {total, exposed}, holdout: {...} }
+  requiredSecretRegionsExposedTotal: requiredRegionsBySet.tuning.exposed + requiredRegionsBySet.holdout.exposed,
+
   overallLeakageFound: anyExposed,
   // Non-privacy signals, reported separately so neither can be mistaken for the other:
   ambiguousShapedMaskRate: ambiguousMaskRate, // utility cost of conservative masking, not a leak metric
   benignFalsePositiveRate, // over-redaction cost on content with nothing to protect
-  leakageByCategoryAllGroups: byCategory, // includes ambiguous/benign for full transparency
-  leakageBySetAllGroups: bySet,
+  leakageByCategoryAllGroups: byCategory, // regions, includes ambiguous/benign for full transparency
+  leakageBySetAllGroups: bySet, // regions
   exposedRegionDetails: results.flatMap(r => r.regions.filter(reg => reg.exposed).map(reg => ({
     fixture: r.id, category: reg.category, text: reg.text,
     requiredSecret: REQUIRED_SECRET_CATEGORIES.has(reg.category),
