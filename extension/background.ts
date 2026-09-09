@@ -115,11 +115,26 @@ async function start(run: Run, windowId: number | undefined) {
   const textRegions = await chrome.tabs.sendMessage(tab.id, { type: 'COLLECT_TEXT_REGIONS' }, { documentId: run.documentId })
     .catch(() => ({ ok: false }));
   post(run, {
-    type: 'CAPTURE', taskId, screenshot,
+    type: 'CAPTURE', taskId, screenshot, plannerMode: await plannerMode(run),
     textRegions: textRegions?.ok && textRegions.supported
       ? { supported: true, regions: textRegions.regions, devicePixelRatio: textRegions.devicePixelRatio }
       : { supported: false },
   });
+}
+/** Best-effort: report which planner the server will actually use, so the popup can label it
+ * honestly. Anything unexpected -- fetch failure, non-200, missing/unknown field -- is
+ * 'unavailable'/'unknown', never optimistically assumed to be the model. */
+async function plannerMode(run: Run): Promise<'deterministic' | 'vlm' | 'unknown' | 'unavailable'> {
+  try {
+    const res = await fetch(`${ORIGIN}/health`, {
+      signal: run.abort.signal, redirect: 'error', credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer',
+    });
+    if (!res.ok) return 'unavailable';
+    const mode = (await res.json())?.plannerMode;
+    return mode === 'vlm' || mode === 'deterministic' ? mode : 'unknown';
+  } catch {
+    return 'unavailable';
+  }
 }
 async function plan(run: Run, message: { taskId: string; ok: boolean }) {
   live(run);

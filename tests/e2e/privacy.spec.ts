@@ -29,7 +29,12 @@ const test = base.extend<{ demo: Demo; breakModel: boolean }>({
       await page.bringToFront();
       const requests: string[] = [];
       context.on('request', req => {
-        if (req.url().startsWith('http')) requests.push(JSON.stringify({ url: req.url(), body: req.postData() }));
+        // /health is a fixed same-origin liveness ping with no body (background.ts reads the
+        // active planner mode). It carries nothing, so it's excluded from the outbound-leak
+        // ledger the assertions below reason about.
+        if (req.url().startsWith('http') && !req.url().endsWith('/health')) {
+          requests.push(JSON.stringify({ url: req.url(), body: req.postData() }));
+        }
       });
       const browserCdp = await context.browser()!.newBrowserCDPSession();
       const { targetInfos } = await browserCdp.send('Target.getTargets', { filter: [{ type: 'tab', exclude: false }] });
@@ -114,6 +119,7 @@ test('real local vision fills the intended field without planner-channel leakage
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('991 Vault Lane, Testville 00000');
   await expect(popup.locator('#metrics')).toContainText('PP-OCRv4');
   await expect(popup.locator('#metrics')).toContainText('text pixels');
+  await expect(popup.locator('#planner-mode')).toHaveText('Planner: deterministic (demo)');
   expect(requests).toHaveLength(1);
   const request = JSON.parse(requests[0]);
   expect(request.url).toBe(`${baseURL}/plan`);
@@ -302,6 +308,15 @@ test('Cancel after RESULT, while the preview is still building, abandons it and 
   await expect(popup.locator('#preview-image')).toBeHidden();
 });
 
+test('planner-mode label is honest: unreachable health -> "unavailable", never assumed model', async ({ demo }) => {
+  const { context, popup } = demo;
+  await context.route('**/health', route => route.abort());
+  await popup.getByRole('button', { name: 'Run private fill' }).click();
+  await expect(popup.locator('#planner-mode')).toHaveText('Planner: unavailable', { timeout: 30_000 });
+  // the run itself still proceeds (health is best-effort, not gating)
+  await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+});
+
 test('target replacement during delayed planning blocks the fill', async ({ demo }) => {
   const { context, page, popup } = demo;
   let replaced = false;
@@ -417,6 +432,7 @@ test('@vlm real browser->backend->Qwen->validated fill, mode shown, no raw secre
   // its output passed resolve_action + the binding recheck (deterministic mode is not used in
   // vlm mode; if Qwen were down the server returns 502 and the fill fails).
   await popup.getByRole('button', { name: 'Run private fill' }).click();
+  await expect(popup.locator('#planner-mode')).toHaveText('Planner: Qwen VLM (local)', { timeout: 30_000 });
   await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 90_000 });
   await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'success');
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('991 Vault Lane, Testville 00000');

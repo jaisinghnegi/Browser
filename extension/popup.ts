@@ -5,6 +5,13 @@ const cancel = document.querySelector<HTMLButtonElement>('#cancel')!;
 const status = document.querySelector<HTMLElement>('#status')!;
 const payload = document.querySelector<HTMLElement>('#payload')!;
 const metrics = document.querySelector<HTMLElement>('#metrics')!;
+const plannerMode = document.querySelector<HTMLElement>('#planner-mode')!;
+const PLANNER_LABEL: Record<string, string> = {
+  vlm: 'Planner: Qwen VLM (local)',
+  deterministic: 'Planner: deterministic (demo)',
+  unknown: 'Planner: unknown',
+  unavailable: 'Planner: unavailable',
+};
 const previewStatus = document.querySelector<HTMLElement>('#preview-status')!;
 const previewImage = document.querySelector<HTMLImageElement>('#preview-image')!;
 const port = chrome.runtime.connect({ name: 'privacy-popup' });
@@ -30,7 +37,7 @@ run.addEventListener('click', () => {
   generation++;
   supersedePreview();
   previewBuilding = false;
-  busy(true); status.textContent = 'Capturing locally…'; metrics.textContent = ''; payload.textContent = 'No request sent.';
+  busy(true); status.textContent = 'Capturing locally…'; metrics.textContent = ''; plannerMode.textContent = ''; payload.textContent = 'No request sent.';
   resetPreview();
   // A toolbar-action popup reports the browser window it's anchored to here (it has no
   // separate window of its own), which is the one activeTab was actually granted for --
@@ -52,6 +59,7 @@ cancel.addEventListener('click', () => {
 port.onMessage.addListener(message => {
   if (message.type === 'CAPTURE') {
     const token = generation;
+    plannerMode.textContent = PLANNER_LABEL[message.plannerMode] ?? PLANNER_LABEL.unknown;
     status.textContent = 'Running local vision…';
     void inspectScreenshot(message.screenshot).then(result => {
       if (token !== generation) return;
