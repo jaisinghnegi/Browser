@@ -83,11 +83,23 @@ correction 2, printed alongside for reference only.)
   class, not `element.style` / inline `style=` — both blocked by the extension_pages CSP
   (`style-src 'self'`), which is why the redacted image never displayed before.
 
-## Next: packaged popup stage timings
+## Packaged popup measurements (this machine)
 
-Still missing: the **actual popup** cold session-create and per-`session.run` times
-(the Node numbers above under-state it). That measurement is the gate for whether
-batched `[N,3,48,W]` inference is worth it — batch > 1 works (`[2,3,48,320]` →
-`[2,40,6625]`), and since `session.run` (not preprocess) is the cost, collapsing N
-calls into one is now a plausible win, pending: packaged timings + a padding-accuracy
-check. Not a prerequisite for the preview acceptance gate.
+Real popup, `BUILD_PREVIEW_PACE_MS=0`, isolated build, RTX 4060 laptop:
+
+| fixture | regions | whole-build `timingMs.total` |
+|---------|---------|------------------------------|
+| `preview` | 2 | ~1.17 s |
+| `preview-multi` | 8 (= `MAX_REGIONS`) | ~2.84 s (~355 ms/region) |
+
+These are **observations from one machine, not a guarantee**. `MAX_REGIONS = 8`
+bounds the region *count*, not elapsed time — a slower host, a cold session, or a
+larger crop all push it up; the cooperative `MAX_PREVIEW_MS` budget + `AbortSignal`
+are what actually bound how long the user waits. The earlier "60s" report is not
+reproducible here (it predates the generation-race and CSP fixes that stopped builds
+from ever settling). The isolated e2e build injects 900 ms/region purely for
+lifecycle-race determinism — that number is not a latency figure.
+
+Batching `[N,3,48,W]` (batch > 1 verified) stays deferred: `session.run` is the cost,
+so collapsing N calls is plausible, but it needs a padding-accuracy check and isn't a
+prerequisite for anything shipping now.

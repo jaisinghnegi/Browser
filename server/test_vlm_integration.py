@@ -9,6 +9,7 @@ through that same Python adapter on safe fixtures" -- it self-skips if no server
 health on the expected port, since that's a personal-machine artifact (~3.6GB runtime/model,
 never installed in CI or committed to this repo).
 """
+import asyncio
 import json
 
 import httpx
@@ -163,3 +164,43 @@ async def test_real_smoke_against_running_llama_server():
     for fixture_id in sorted(ALLOWED_FIXTURE_IDS):
         result = await run_fixture(fixture_id, base_url)
         assert result['outcome'] == 'resolved', f'{fixture_id}: {result}'
+
+
+@pytest.mark.anyio
+async def test_total_deadline_expires_on_a_trickling_response(monkeypatch):
+    """A peer that trickles bytes forever, each chunk under any per-read timeout, must still
+    hit the single elapsed deadline."""
+    async def slow_body():
+        for _ in range(50):
+            await asyncio.sleep(0.05)
+            yield b'x'
+    def handler(request):
+        return httpx.Response(200, content=slow_body())
+    _client_with_transport(httpx.MockTransport(handler), monkeypatch)
+    with pytest.raises(VlmUnavailable, match='deadline'):
+        await plan_with_vlm(base_url='http://x', system_prompt='s', user_prompt='u',
+                            image_data_url=DUMMY_IMAGE, timeout_s=0.3)
+
+
+@pytest.mark.anyio
+async def test_queue_wait_counts_toward_the_deadline(monkeypatch):
+    """Time spent waiting for the concurrency semaphore is inside the deadline, not on top of it."""
+    def handler(request):
+        return httpx.Response(200, json={'choices': [{'message': {'content': '{}'}}]})
+    _client_with_transport(httpx.MockTransport(handler), monkeypatch)
+    held = asyncio.Semaphore(1)
+    await held.acquire()  # nobody will release it -> the call below can never enter
+    try:
+        with pytest.raises(VlmUnavailable, match='deadline'):
+            await plan_with_vlm(base_url='http://x', system_prompt='s', user_prompt='u',
+                                image_data_url=DUMMY_IMAGE, timeout_s=0.2, semaphore=held)
+    finally:
+        held.release()
+
+
+@pytest.mark.anyio
+async def test_admission_cap_rejects_a_full_queue(monkeypatch):
+    import server.vlm_client as vc
+    monkeypatch.setattr(vc, '_in_system', vc._DEFAULT_ADMISSION_LIMIT)
+    with pytest.raises(VlmUnavailable, match='queue is full'):
+        await plan_with_vlm(base_url='http://x', system_prompt='s', user_prompt='u', image_data_url=DUMMY_IMAGE)

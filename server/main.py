@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -11,12 +12,48 @@ from server.vlm_planner import VlmPlanRejected, plan_action
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
+_VALID_PLANNER_MODES = ('deterministic', 'vlm')
+_LOOPBACK_HOSTS = ('127.0.0.1', 'localhost', '::1')
+
+
+def validate_planner_mode(mode: str) -> str:
+    """A typo must fail startup, not silently run deterministic while the UI could say 'vlm'."""
+    if mode not in _VALID_PLANNER_MODES:
+        raise RuntimeError(f'PLANNER_MODE must be one of {_VALID_PLANNER_MODES}, got {mode!r}')
+    return mode
+
+
+def validate_local_vlm_url(url: str) -> str:
+    """The current 'vlm' mode is LOCAL Qwen only. Enforce a plain http loopback endpoint with a
+    real port and nothing else -- no https/remote host, no userinfo, no path/query/fragment --
+    so a mis-set env can never point 'local Qwen' at a remote service. Future cloud providers
+    would be a separate, explicitly labelled mode."""
+    trimmed = url.rstrip('/')
+    p = urlsplit(trimmed)
+    if p.scheme != 'http':
+        raise RuntimeError(f'VLM_BASE_URL must be http:// (local loopback), got {url!r}')
+    if p.username or p.password:
+        raise RuntimeError('VLM_BASE_URL must not contain userinfo')
+    if p.path or p.query or p.fragment:
+        raise RuntimeError('VLM_BASE_URL must be scheme://host:port with no path/query/fragment')
+    if p.hostname not in _LOOPBACK_HOSTS:
+        raise RuntimeError(f'VLM_BASE_URL host must be loopback {_LOOPBACK_HOSTS}, got {p.hostname!r}')
+    try:
+        port = p.port
+    except ValueError as exc:
+        raise RuntimeError('VLM_BASE_URL has an invalid port') from exc
+    if port is None or not (1 <= port <= 65535):
+        raise RuntimeError('VLM_BASE_URL must include a valid port')
+    return trimmed
+
+
 # 'deterministic' (default): the tested Protocol-1 planner echoes the authorised binding.
-# 'vlm': an actual local Qwen call selects the action, still passed through the same
-# resolve_action trust boundary and the extension's schema/binding/one-use validation. Set at
-# process start only; never per-request. There is NO silent deterministic fallback in vlm mode.
-PLANNER_MODE = os.environ.get('PLANNER_MODE', 'deterministic')
-VLM_BASE_URL = os.environ.get('VLM_BASE_URL', 'http://127.0.0.1:8973')
+# 'vlm': an actual local Qwen call selects one pre-authorised option (NOT general page
+# reasoning -- the reference-only request carries a single bounded choice), still passed through
+# the resolve_action trust boundary and the extension's schema/binding/one-use validation. Set
+# at process start only; never per-request. There is NO silent deterministic fallback in vlm mode.
+PLANNER_MODE = validate_planner_mode(os.environ.get('PLANNER_MODE', 'deterministic'))
+VLM_BASE_URL = validate_local_vlm_url(os.environ.get('VLM_BASE_URL', 'http://127.0.0.1:8973'))
 
 
 @app.exception_handler(RequestValidationError)

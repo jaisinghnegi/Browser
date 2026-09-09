@@ -147,3 +147,37 @@ async def test_real_smoke_against_running_llama_server():
     action = await plan_action(main.PlannerRequest.model_validate(REQUEST), base_url=base)
     assert isinstance(action, FillAction)
     assert action.target == REQUEST['target'] and action.valueRef == 'ADDRESS_1'
+
+
+@pytest.mark.parametrize('mode', ['deterministic', 'vlm'])
+def test_validate_planner_mode_accepts_known(mode):
+    assert main.validate_planner_mode(mode) == mode
+
+
+@pytest.mark.parametrize('bad', ['vml', 'VLM', 'ai', 'deterministic ', ''])
+def test_validate_planner_mode_rejects_unknown(bad):
+    with pytest.raises(RuntimeError):
+        main.validate_planner_mode(bad)
+
+
+@pytest.mark.parametrize('url', [
+    'http://127.0.0.1:8973', 'http://localhost:8973', 'http://127.0.0.1:8973/', 'http://[::1]:8973',
+])
+def test_validate_local_vlm_url_accepts_loopback(url):
+    assert main.validate_local_vlm_url(url).rstrip('/') in (
+        'http://127.0.0.1:8973', 'http://localhost:8973', 'http://[::1]:8973')
+
+
+@pytest.mark.parametrize('url', [
+    'https://127.0.0.1:8973',            # not http
+    'http://10.0.0.5:8973',             # remote host
+    'http://example.com:8973',          # remote host
+    'http://user:pass@127.0.0.1:8973',  # userinfo
+    'http://127.0.0.1:8973/v1',         # path
+    'http://127.0.0.1:8973?x=1',        # query
+    'http://127.0.0.1',                 # no port
+    'http://127.0.0.1:99999',           # bad port
+])
+def test_validate_local_vlm_url_rejects_non_local_or_malformed(url):
+    with pytest.raises(RuntimeError):
+        main.validate_local_vlm_url(url)

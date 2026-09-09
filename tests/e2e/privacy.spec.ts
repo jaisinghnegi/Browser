@@ -396,3 +396,46 @@ test('closing the popup aborts a pending planner request', async ({ demo }) => {
   await aborted;
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
 });
+
+// Real browser -> FastAPI (PLANNER_MODE=vlm) -> local Qwen -> validated fill. Run with
+// `npm run test:e2e:vlm` (needs a live llama-server on :8973). Not part of the default suite:
+// it is only selected by its `@vlm` tag, and additionally self-skips if the env/model isn't
+// there so an accidental run is harmless.
+test('@vlm real browser->backend->Qwen->validated fill, mode shown, no raw secrets/image sent', async ({ demo, baseURL }) => {
+  test.setTimeout(120_000);
+  test.skip(process.env.PLANNER_MODE !== 'vlm', 'run via npm run test:e2e:vlm');
+  const { context, page, popup, requests } = demo;
+
+  const health = await (await fetch(`${baseURL}/health`)).json();
+  test.skip(health.plannerMode !== 'vlm', 'server is not in vlm mode');
+  let modelUp = false;
+  try { modelUp = (await fetch('http://127.0.0.1:8973/health')).ok; } catch { /* down */ }
+  test.skip(!modelUp, 'no local llama-server on :8973');
+  expect(health).toEqual({ status: 'ok', plannerMode: 'vlm' });
+
+  // Happy path: a successful fill here can ONLY happen if the server actually called Qwen and
+  // its output passed resolve_action + the binding recheck (deterministic mode is not used in
+  // vlm mode; if Qwen were down the server returns 502 and the fill fails).
+  await popup.getByRole('button', { name: 'Run private fill' }).click();
+  await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 90_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'success');
+  await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('991 Vault Lane, Testville 00000');
+
+  expect(requests).toHaveLength(1);
+  const body = JSON.parse(requests[0]).body as string;
+  const payload = JSON.parse(body);
+  expect(Object.keys(payload).sort()).toEqual(['fieldKind', 'observationId', 'protocol', 'target', 'taskId', 'valueRef']);
+  expect(body).not.toContain('data:image');            // no screenshot on the wire (protocol-1)
+  for (const secret of ['991 Vault Lane', '71 Visible Road', 'Sample City']) {
+    expect(body).not.toContain(secret);
+    expect(await readFile('test-results/server.log', 'utf8')).not.toContain(secret);
+  }
+
+  // Model-failure path: force the vlm planner to 502; the extension must fail closed.
+  await page.getByLabel('Shipping address', { exact: true }).fill('');
+  await context.route('**/plan', route => route.fulfill({ status: 502, json: { error: 'planner unavailable' } }));
+  await popup.getByRole('button', { name: 'Run private fill' }).click();
+  await expect(popup.getByRole('status')).toContainText('Blocked', { timeout: 30_000 });
+  await expect(popup.getByRole('status')).toHaveAttribute('data-reason', 'planner-action-rejected');
+  await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('');
+});

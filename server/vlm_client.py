@@ -22,6 +22,13 @@ DEFAULT_MAX_PROMPT_CHARS = 4_000
 _DEFAULT_CONCURRENCY_LIMIT = 1
 _default_semaphore = asyncio.Semaphore(_DEFAULT_CONCURRENCY_LIMIT)
 
+# Admission cap: the semaphore bounds ACTIVE calls, not the number of coroutines queued waiting
+# for it. This counter bounds active + queued together, so a burst can't pile up an unbounded
+# backlog of multi-second waiters. The check-and-increment below has no await between its two
+# statements, so it is atomic under asyncio's single-threaded scheduling.
+_DEFAULT_ADMISSION_LIMIT = 4
+_in_system = 0
+
 
 class VlmUnavailable(Exception):
     """Raised for any failure talking to the local VLM server. Signals 'unavailable', not
@@ -74,9 +81,13 @@ async def plan_with_vlm(
         ],
     }
 
+    global _in_system
     sem = semaphore if semaphore is not None else _default_semaphore
-    try:
+
+    async def _run() -> bytes:
         # Bounded concurrency: at most `sem`'s count in flight against the local model at once.
+        # The queue wait for `sem` is INSIDE the outer total deadline (below), so a backlog
+        # can't make one call block past timeout_s.
         async with sem:
             # trust_env=False: never pick up HTTP_PROXY/HTTPS_PROXY and silently route a
             # "local" request somewhere else. follow_redirects left at httpx's default (False).
@@ -98,10 +109,23 @@ async def plan_with_vlm(
                         if total > max_response_bytes:
                             raise VlmUnavailable('oversized response (exceeded cap while streaming)')
                         chunks.append(chunk)
-                    raw_body = b''.join(chunks)
+                    return b''.join(chunks)
+
+    # Admission cap (active + queued): reject rather than pile up an unbounded waiter backlog.
+    if _in_system >= _DEFAULT_ADMISSION_LIMIT:
+        raise VlmUnavailable('planner queue is full')
+    _in_system += 1
+    try:
+        # ONE elapsed deadline across queue wait + connect + every response chunk. A slow peer
+        # trickling bytes just under the read timeout, or a long `sem` queue, still expires here.
+        raw_body = await asyncio.wait_for(_run(), timeout=timeout_s)
+    except (asyncio.TimeoutError, TimeoutError) as exc:
+        raise VlmUnavailable('planner deadline exceeded') from exc
     except httpx.HTTPError as exc:
         # Includes connect errors, timeouts, redirect-not-followed, etc. -- all "unavailable".
         raise VlmUnavailable(f'planner request failed: {type(exc).__name__}') from exc
+    finally:
+        _in_system -= 1
 
     try:
         payload = json.loads(raw_body)
