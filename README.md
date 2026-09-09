@@ -2,7 +2,7 @@
 
 A Chrome extension feasibility slice: capture locally, run a real packaged text-region model, send only field references to a localhost planner, then resolve a synthetic address locally into a bound input.
 
-**Scope:** one synthetic fixture. All screenshot pixels and page text are withheld from the planner. This is not general PII detection, OCR transcription, selective redaction, or a production browser agent. The planner is deterministic FastAPI, not an external LLM.
+**Scope:** one synthetic fixture. All screenshot pixels and page text are withheld from the planner. This is not general PII detection, OCR transcription, selective redaction, or a production browser agent. The planner defaults to a deterministic FastAPI response; an optional `PLANNER_MODE=vlm` routes the same reference-only request (still no image) through a local Qwen model behind the same validation. A separate local text-chat surface lives at `/` — see **Local chat** below.
 
 ## Setup (Windows PowerShell)
 
@@ -23,6 +23,25 @@ Port **8171** is deliberate: port 8000 was already occupied on the development m
 
 ## Run the demo
 
+### One launcher for the local services
+
+`scripts/dev.mjs` owns the FastAPI backend on 8171 — a single clean start (it stops any stale
+listener first, so no double-spawned servers) and a combined status view. It does **not** start
+the llama.cpp model server on 8973 (a large personal artifact with its own launch); it checks
+it and prints guidance if it is down.
+
+```powershell
+npm.cmd run demo:up       # start backend on :8171 (PLANNER_MODE=vlm, VLM_BASE_URL=http://127.0.0.1:8973 by default)
+npm.cmd run demo:status   # report backend :8171 (planner mode, model-ready) and model server :8973
+npm.cmd run demo:down     # stop the backend on :8171
+```
+
+`demo:up` starts uvicorn detached (survives the shell) and logs to `test-results/backend.log`.
+Override with `PLANNER_MODE=deterministic`, `VLM_BASE_URL=...`, or `PORT=...`. These are local
+dev processes, not an installed service — they stop on `demo:down` or reboot.
+
+### Steps
+
 1. Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select this project's `dist` directory.
 2. Open [the synthetic fixture](http://localhost:8171/fixture).
 3. Open the **Privacy Agent** toolbar popup and select **Run private fill**. Keep the popup open.
@@ -40,6 +59,16 @@ attribute on the status element (e.g. `observation-failed`, `field-not-visible`,
 `vision-failed`, `stale-observation`, `planner-action-rejected`, `execution-rejected`,
 `timeout`, `cancelled`, `navigated`, `success`) for scripted/test inspection; it is never
 built from page or planner text.
+
+## Local chat
+
+`http://localhost:8171/` serves a small local text-chat workspace that talks to the same local
+Qwen server. It is **completely separate** from the browser extension: no screenshots, no page
+text, no tools, no ability to act on any page. Bounded to 12 alternating messages / 4000 chars
+per turn, same-origin only, model replies rendered as text (never HTML). Conversation history
+lives only in the tab (and is sent to local Qwen with each reply); the app does not store it.
+The header shows a probed **checking / ready / unavailable** state; when the model is down,
+send is blocked and an explicit **Check again** re-probes health without sending a request.
 
 ## Privacy boundary
 
