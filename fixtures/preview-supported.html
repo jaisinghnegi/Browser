@@ -11,7 +11,9 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: #f3f5f8; color: #10203a; font: 16px/1.6 system-ui, sans-serif; }
     main { width: 420px; margin: 40px auto; padding: 24px; background: #fff; border: 1px solid #d8e0eb; border-radius: 10px; }
-    .addr { margin: 0 0 18px; font-size: 20px; font-weight: 700; white-space: nowrap; letter-spacing: .2px; }
+    /* Generous gap below the address so the +10px redaction margin never bleeds into the
+       benign label the e2e asserts survives. */
+    .addr { margin: 0 0 40px; font-size: 20px; font-weight: 700; white-space: nowrap; letter-spacing: .2px; }
     label { display: block; font-weight: 650; margin: 0 0 8px; }
     input { display: block; width: 100%; font: inherit; padding: 10px; border: 2px solid #7589a4; border-radius: 8px; }
   </style>

@@ -1,17 +1,19 @@
-// Recognizer input-width cost profile, corrected after review (ocr-profile-review).
+// Recognizer input-width cost profile. Corrected twice after review (ocr-profile-review,
+// preview-lifecycle-review):
+//   1. v1 measured oversized boxes over a 1000x800 screenshot; image-ops clips the crop to
+//      naturalWidth, so 1400px and 2400px requests were the SAME tensor -- the "plateau" was
+//      identical input. Withdrawn.
+//   2. v2 timed "preprocess" as the whole Playwright evaluate, including Array.from(input)
+//      serialization back to Node. That transport is not in the popup; its "preprocessing
+//      dominates" conclusion was a harness artifact. Withdrawn.
 //
-// The earlier version measured synthetic oversized boxes over a 1000x800 screenshot;
-// scripts/phase2/image-ops.mjs clips the source crop to `naturalWidth - x`, so both a 1400px
-// and a 2400px request became the SAME ~2138-wide tensor -- the apparent "plateau" was just
-// identical input, not a model-internal cap. Conclusions about internal caps and fixed
-// per-call overhead were withdrawn.
-//
-// This version renders ONE real text line at a controlled CSS width in a wide viewport, so the
-// crop is fully in-bounds, screenshots it, and measures preprocessing / session.run / decode
-// separately with repeated samples. It reports actual tensor dimensions. It does NOT compare a
-// tiling strategy (tiling was rejected: it adds calls and risks a seam dropping a glyph -> the
-// production path is a single inference with an explicit withhold above MAX_RECOGNIZER_WIDTH,
-// see extension/recognize-bounds.ts).
+// This version renders ONE real text line at a controlled CSS width in a wide viewport (crop
+// fully in-bounds), times preprocessing INSIDE the page (just canvas draw + normalize loop)
+// vs session.run/decode in Node, repeated samples, actual tensor dims. Finding: session.run is
+// ~the entire cost (linear in width); in-page preprocess and decode are single-digit ms. It
+// does NOT compare tiling (rejected: adds calls, risks a seam dropping a glyph -- production
+// path is one inference with an explicit withhold above MAX_RECOGNIZER_WIDTH). These are Node
+// numbers; the packaged popup is slower per call and still needs its own measurement.
 //
 // Not a privacy test and not part of the frozen evaluation -- pure performance instrumentation.
 import { readFile } from 'node:fs/promises';
@@ -45,6 +47,10 @@ async function renderLine(cssWidth) {
 
 const opsPage = await browser.newPage();
 await opsPage.setContent('<canvas></canvas>');
+// Returns the tensor AND a timer taken INSIDE the page for just the canvas draw + normalize
+// loop (`inPagePreMs`). The wall time of this whole call additionally includes Playwright
+// evaluate round-trip + `Array.from(input)` serialization/transport to Node -- that part is
+// harness-only and absent in the real popup, so the two numbers are reported separately.
 async function preprocess(dataUrl, box) {
   return opsPage.evaluate(async ({ dataUrl, box, H }) => {
     const image = new Image(); image.src = dataUrl; await image.decode();
@@ -52,13 +58,15 @@ async function preprocess(dataUrl, box) {
     const w = Math.max(1, Math.min(image.naturalWidth - x, Math.ceil(box.width)));
     const h = Math.max(1, Math.min(image.naturalHeight - y, Math.ceil(box.height)));
     const tw = Math.max(8, Math.round(w * (H / h)));
+    const t0 = performance.now();
     const c = document.createElement('canvas'); c.width = tw; c.height = H;
     const cx = c.getContext('2d', { willReadFrequently: true });
     cx.drawImage(image, x, y, w, h, 0, 0, tw, H);
     const rgba = cx.getImageData(0, 0, tw, H).data;
     const plane = tw * H; const input = new Float32Array(3 * plane);
     for (let ch = 0; ch < 3; ch++) for (let p = 0; p < plane; p++) input[ch * plane + p] = (rgba[p * 4 + (2 - ch)] / 255 - 0.5) / 0.5;
-    return { tw, input: Array.from(input) };
+    const inPagePreMs = performance.now() - t0;
+    return { tw, inPagePreMs, input: Array.from(input) };
   }, { dataUrl, box, H: RECOGNIZER_HEIGHT });
 }
 
@@ -67,12 +75,12 @@ const median = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
 
 for (const cssWidth of [200, 600, 1200, 2400, 3600]) {
   const { box, dataUrl } = await renderLine(cssWidth);
-  const pre = [], inf = [], dec = [];
+  const preInPage = [], preHarness = [], inf = [], dec = [];
   let tw = 0, timesteps = 0;
   for (let i = 0; i < SAMPLES + 1; i++) {
     let t = performance.now();
     const p = await preprocess(dataUrl, box); tw = p.tw;
-    const preMs = performance.now() - t;
+    const harnessPreMs = performance.now() - t; // includes evaluate round-trip + Array.from transport
     const tensor = new ort.Tensor('float32', Float32Array.from(p.input), [1, 3, RECOGNIZER_HEIGHT, tw]);
     t = performance.now();
     const out = await session.run({ [session.inputNames[0]]: tensor });
@@ -81,12 +89,13 @@ for (const cssWidth of [200, 600, 1200, 2400, 3600]) {
     t = performance.now();
     ctcGreedyDecode(o.data, o.dims[1], o.dims[2], dictionary);
     const decMs = performance.now() - t;
-    if (i > 0) { pre.push(preMs); inf.push(infMs); dec.push(decMs); } // drop warm-up
+    if (i > 0) { preInPage.push(p.inPagePreMs); preHarness.push(harnessPreMs); inf.push(infMs); dec.push(decMs); } // drop warm-up
   }
   console.log(
     `css ${String(cssWidth).padStart(4)}px | tensor ${tw}x${RECOGNIZER_HEIGHT} (${timesteps} steps) | ` +
-    `preprocess ${median(pre).toFixed(0)}ms | session.run ${median(inf).toFixed(0)}ms | decode ${median(dec).toFixed(1)}ms ` +
-    `(n=${SAMPLES}, min/max run ${Math.min(...inf).toFixed(0)}/${Math.max(...inf).toFixed(0)})`);
+    `preprocess in-page ${median(preInPage).toFixed(0)}ms (harness-inclusive ${median(preHarness).toFixed(0)}ms) | ` +
+    `session.run ${median(inf).toFixed(0)}ms | decode ${median(dec).toFixed(1)}ms ` +
+    `(n=${SAMPLES}, run min/max ${Math.min(...inf).toFixed(0)}/${Math.max(...inf).toFixed(0)})`);
 }
 
 await session.release();

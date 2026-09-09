@@ -36,7 +36,11 @@ def fixture(request: Request):
     # (see tests/e2e/privacy.spec.ts). The extension's allowed-URL check strips the query
     # string (background.ts normalizeFixtureUrl / content.ts normalizedHref), so both variants
     # are the same single allowed page as far as the gating flow is concerned.
-    name = 'fixtures/preview-supported.html' if request.query_params.get('variant') == 'preview' else 'fixtures/checkout.html'
+    variant = request.query_params.get('variant')
+    name = {
+        'preview': 'fixtures/preview-supported.html',
+        'preview-multi': 'fixtures/preview-multiline.html',
+    }.get(variant, 'fixtures/checkout.html')
     return FileResponse(Path(__file__).parents[1] / name,
                         headers={'Cache-Control': 'no-store',
                                  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'"})

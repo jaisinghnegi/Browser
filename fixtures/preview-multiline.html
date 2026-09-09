@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Agent — Slow-preview fixture</title>
+  <style>
+    /* No unsupported structure. main fits inside the 1000px e2e viewport so the field stays
+       fully visible. Eight moderately wide text lines (nowrap) => eight sequential recognizer
+       calls => the whole preview build runs for several seconds, long enough to exercise an
+       in-flight supersede/cancel deterministically. Exactly MAX_REGIONS regions. */
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f5f8; color: #10203a; font: 16px/1.6 system-ui, sans-serif; }
+    main { width: 880px; margin: 20px auto; padding: 24px; background: #fff; border: 1px solid #d8e0eb; border-radius: 10px; }
+    p { margin: 6px 0; white-space: nowrap; }
+    .addr { font-size: 18px; font-weight: 700; margin: 10px 0 24px; }
+    label { display: block; font-weight: 650; margin: 0 0 8px; }
+    input { display: block; width: 100%; font: inherit; padding: 10px; border: 2px solid #7589a4; border-radius: 8px; }
+  </style>
+</head>
+<body><main>
+  <p>Order confirmation for your recent purchase, with a full itemised summary of every product.</p>
+  <p>Estimated delivery is three to five business days from the date this order was confirmed.</p>
+  <p>Items ship from the nearest regional fulfilment centre and can arrive in more than one parcel.</p>
+  <p>Track each parcel from your account page using the reference on the order confirmation screen.</p>
+  <p>Returns are free within thirty days of delivery when the item is unused and in its packaging.</p>
+  <p class="addr">14 Baker Rd, Testville 00000</p>
+  <p>Contact the customer support team if any billing or delivery detail on this order looks wrong.</p>
+  <label for="shipping-address">Shipping address</label>
+  <input id="shipping-address" name="shipping-address" type="text" autocomplete="off" spellcheck="false">
+</main></body></html>

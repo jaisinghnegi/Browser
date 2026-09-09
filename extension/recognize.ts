@@ -48,42 +48,48 @@ export function ctcGreedyDecode(probs: Float32Array, timesteps: number, numClass
   return { text, meanConfidence };
 }
 
-let recognizerSession: ort.InferenceSession | undefined;
+/** One recognizer session owned by ONE preview build. Not a module-global: overlapping builds
+ * (a supersede lands mid-inference) must not share a session or race each other's cleanup --
+ * each build creates its own and releases only its own, in its own `finally`. */
+export class RecognizerSession {
+  private constructor(private session: ort.InferenceSession, private dict: string[]) {}
 
-/** Crops `box` (physical-pixel coordinates in the already-decoded source canvas) and runs the
- * recognizer. Caller owns the canvas/context lifetime; this only reads pixels, never persists
- * them beyond the local Float32Array used for one inference call. */
-export async function recognizeRegion(
-  ctx: CanvasRenderingContext2D, box: { x: number; y: number; width: number; height: number },
-): Promise<RecognizeResult> {
-  const dict = await loadDictionary();
-  const x = Math.max(0, Math.floor(box.x)), y = Math.max(0, Math.floor(box.y));
-  const w = Math.max(1, Math.ceil(box.width)), h = Math.max(1, Math.ceil(box.height));
-  const targetHeight = RECOGNIZER_HEIGHT;
-  const { targetWidth, overflow } = planRecognizerInput(box.width, box.height);
-  if (overflow) throw new RecognizerInputOverflowError(targetWidth);
-  const cropCanvas = document.createElement('canvas');
-  cropCanvas.width = targetWidth; cropCanvas.height = targetHeight;
-  const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
-  if (!cropCtx) throw new Error('No crop context');
-  cropCtx.drawImage(ctx.canvas, x, y, w, h, 0, 0, targetWidth, targetHeight);
-  const rgba = cropCtx.getImageData(0, 0, targetWidth, targetHeight).data;
-  const plane = targetWidth * targetHeight;
-  const input = new Float32Array(3 * plane);
-  for (let c = 0; c < 3; c++) for (let p = 0; p < plane; p++) {
-    input[c * plane + p] = (rgba[p * 4 + (2 - c)] / 255 - 0.5) / 0.5;
+  static async create(): Promise<RecognizerSession> {
+    const dict = await loadDictionary();
+    const session = await ort.InferenceSession.create(
+      chrome.runtime.getURL('models/text-recognizer.onnx'), { executionProviders: ['wasm'] });
+    return new RecognizerSession(session, dict);
   }
-  recognizerSession ??= await ort.InferenceSession.create(
-    chrome.runtime.getURL('models/text-recognizer.onnx'), { executionProviders: ['wasm'] });
-  const result = await recognizerSession.run({
-    [recognizerSession.inputNames[0]]: new ort.Tensor('float32', input, [1, 3, targetHeight, targetWidth]),
-  });
-  const output = result[recognizerSession.outputNames[0]];
-  const [, timesteps, numClasses] = output.dims;
-  input.fill(0);
-  return ctcGreedyDecode(output.data as Float32Array, timesteps, numClasses, dict);
-}
 
-export async function releaseRecognizer(): Promise<void> {
-  if (recognizerSession) { await recognizerSession.release(); recognizerSession = undefined; }
+  /** Crops `box` (physical-pixel coords in the already-decoded source canvas) and runs the
+   * recognizer. Reads pixels only; never persists them beyond the one-call Float32Array. */
+  async recognizeRegion(
+    ctx: CanvasRenderingContext2D, box: { x: number; y: number; width: number; height: number },
+  ): Promise<RecognizeResult> {
+    const x = Math.max(0, Math.floor(box.x)), y = Math.max(0, Math.floor(box.y));
+    const w = Math.max(1, Math.ceil(box.width)), h = Math.max(1, Math.ceil(box.height));
+    const targetHeight = RECOGNIZER_HEIGHT;
+    const { targetWidth, overflow } = planRecognizerInput(box.width, box.height);
+    if (overflow) throw new RecognizerInputOverflowError(targetWidth);
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = targetWidth; cropCanvas.height = targetHeight;
+    const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+    if (!cropCtx) throw new Error('No crop context');
+    cropCtx.drawImage(ctx.canvas, x, y, w, h, 0, 0, targetWidth, targetHeight);
+    const rgba = cropCtx.getImageData(0, 0, targetWidth, targetHeight).data;
+    const plane = targetWidth * targetHeight;
+    const input = new Float32Array(3 * plane);
+    for (let c = 0; c < 3; c++) for (let p = 0; p < plane; p++) {
+      input[c * plane + p] = (rgba[p * 4 + (2 - c)] / 255 - 0.5) / 0.5;
+    }
+    const result = await this.session.run({
+      [this.session.inputNames[0]]: new ort.Tensor('float32', input, [1, 3, targetHeight, targetWidth]),
+    });
+    const output = result[this.session.outputNames[0]];
+    const [, timesteps, numClasses] = output.dims;
+    input.fill(0);
+    return ctcGreedyDecode(output.data as Float32Array, timesteps, numClasses, this.dict);
+  }
+
+  async release(): Promise<void> { await this.session.release(); }
 }

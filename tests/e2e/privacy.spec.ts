@@ -159,91 +159,147 @@ test('supported page produces a real nonempty masked preview with opaque GT cove
   await expect(popup.locator('#preview-status')).toContainText('region(s) masked locally', { timeout: 150_000 });
   const previewText = (await popup.locator('#preview-status').textContent()) ?? '';
   expect(previewText).toMatch(/[1-9]\d* region\(s\) masked locally/); // nonempty: at least one region masked
+  const SECRET = '14 Baker Rd, Testville 00000'; // the actual fixture value being redacted
+  const VAULT = '991 Vault Lane, Testville 00000'; // filled locally, must never be on the wire
   const planReqs = () => requests.filter(r => JSON.parse(r).url.endsWith('/plan'));
   expect(planReqs()).toHaveLength(1); // exactly the one gating request; the preview build issues none
-  expect(requests.join('')).not.toContain('221 Baker Rd'); // no secret on any channel
+  expect(requests.join('')).not.toContain(SECRET);
+  expect(requests.join('')).not.toContain(VAULT);
 
-  // Ground truth measured INDEPENDENTLY of the extension: the address line's own client rect,
-  // read straight from the page DOM, scaled to device pixels exactly like the screenshot.
-  // Ground truth = the address TEXT NODE's own rect (a Range over its contents), measured here
-  // independently. Deliberately the same geometry the redaction targets, so a full-coverage
-  // assertion is meaningful rather than testing the surrounding block's padding.
-  const gt = await page.evaluate(() => {
-    const el = document.querySelector('.addr')!;
-    const range = document.createRange();
-    range.selectNodeContents(el.firstChild!);
-    const r = range.getClientRects()[0];
-    return { x: r.x, y: r.y, width: r.width, height: r.height, dpr: window.devicePixelRatio };
+  // Ground truth measured INDEPENDENTLY of the extension: the TEXT NODE's own rect (a Range
+  // over its contents) for both the sensitive address and a benign label -- the same geometry
+  // the redaction targets, so full-coverage / survival assertions are meaningful.
+  const boxes = await page.evaluate(() => {
+    const rectOf = (sel: string) => {
+      const el = document.querySelector(sel)!;
+      const range = document.createRange();
+      range.selectNodeContents(el.firstChild!);
+      const r = range.getClientRects()[0];
+      return { x: r.x, y: r.y, width: r.width, height: r.height };
+    };
+    return { dpr: window.devicePixelRatio, secret: rectOf('.addr'), benign: rectOf('label[for="shipping-address"]') };
   });
 
   await popup.locator('details', { hasText: 'Local sanitized preview' }).locator('summary').click();
   await expect(popup.locator('#preview-image')).toBeVisible();
 
-  // Decode the actual redacted image bytes shown in the popup and sample a grid inside the GT
-  // box. Every sample must be fully opaque near-black -> the address text is covered, not just
-  // overlaid, and the mask is not translucent.
-  const coverage = await popup.evaluate(async ({ gt }) => {
+  // Decode the ACTUAL redacted PNG bytes shown in the popup. Scan EVERY pixel across each
+  // independently-measured box (rounded inward, clamped to image bounds):
+  //  - secret box: every pixel must be fully opaque near-black (covered + opaque, not a
+  //    translucent overlay);
+  //  - benign box: must retain substantial non-black content (guards against "mask everything"
+  //    / an all-black image passing).
+  const scan = await popup.evaluate(async ({ boxes }) => {
     const img = document.querySelector<HTMLImageElement>('#preview-image')!;
-    const src = img.src;
-    if (!src.startsWith('data:image/png;base64,')) return { error: 'not a png data url' };
-    const bitmap = new Image();
-    bitmap.src = src;
-    await bitmap.decode();
+    if (!img.src.startsWith('data:image/png;base64,')) return { error: 'not a png data url' };
+    const bitmap = new Image(); bitmap.src = img.src; await bitmap.decode();
     const canvas = document.createElement('canvas');
     canvas.width = bitmap.naturalWidth; canvas.height = bitmap.naturalHeight;
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(bitmap, 0, 0);
-    const x0 = gt.x * gt.dpr, y0 = gt.y * gt.dpr, w = gt.width * gt.dpr, h = gt.height * gt.dpr;
-    let sampled = 0, opaqueBlack = 0;
-    for (let fx = 0.15; fx <= 0.85; fx += 0.1) {
-      for (let fy = 0.3; fy <= 0.7; fy += 0.2) {
-        const px = Math.round(x0 + fx * w), py = Math.round(y0 + fy * h);
-        if (px < 0 || py < 0 || px >= canvas.width || py >= canvas.height) continue;
-        const [r, g, b, a] = ctx.getImageData(px, py, 1, 1).data;
-        sampled++;
-        if (a === 255 && r < 16 && g < 16 && b < 16) opaqueBlack++;
+    const measure = (b: { x: number; y: number; width: number; height: number }) => {
+      const x0 = Math.max(0, Math.ceil(b.x * boxes.dpr));
+      const y0 = Math.max(0, Math.ceil(b.y * boxes.dpr));
+      const x1 = Math.min(canvas.width, Math.floor((b.x + b.width) * boxes.dpr));
+      const y1 = Math.min(canvas.height, Math.floor((b.y + b.height) * boxes.dpr));
+      const w = Math.max(0, x1 - x0), h = Math.max(0, y1 - y0);
+      if (w === 0 || h === 0) return { total: 0, opaqueBlack: 0, nonBlack: 0 };
+      const d = ctx.getImageData(x0, y0, w, h).data;
+      let opaqueBlack = 0, nonBlack = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const [r, g, b2, a] = [d[i], d[i + 1], d[i + 2], d[i + 3]];
+        if (a === 255 && r < 16 && g < 16 && b2 < 16) opaqueBlack++;
+        else nonBlack++;
       }
-    }
-    return { sampled, opaqueBlack, imgW: canvas.width, imgH: canvas.height };
-  }, { gt });
+      return { total: d.length / 4, opaqueBlack, nonBlack };
+    };
+    return { secret: measure(boxes.secret), benign: measure(boxes.benign), imgW: canvas.width, imgH: canvas.height };
+  }, { boxes });
 
-  expect('error' in coverage ? coverage.error : '').toBe('');
-  expect((coverage as { sampled: number }).sampled).toBeGreaterThan(8);
-  expect((coverage as { opaqueBlack: number }).opaqueBlack).toBe((coverage as { sampled: number }).sampled);
-  await info.attach('preview-gt-coverage', { body: JSON.stringify(coverage), contentType: 'application/json' });
+  expect('error' in scan ? scan.error : '').toBe('');
+  const s = scan as { secret: { total: number; opaqueBlack: number }; benign: { total: number; nonBlack: number } };
+  await info.attach('preview-pixel-scan', { body: JSON.stringify(scan), contentType: 'application/json' });
+  expect(s.secret.total).toBeGreaterThan(500);            // a real, non-degenerate box
+  expect(s.secret.opaqueBlack).toBe(s.secret.total);      // 100% of the secret box is opaque black
+  expect(s.benign.total).toBeGreaterThan(200);
+  expect(s.benign.nonBlack / s.benign.total).toBeGreaterThan(0.5); // benign label survived, not masked
 
   // And the fill flow itself still works and still leaks nothing on the planner channel.
   // (#preview-status also has role=status once its <details> is expanded above, so target #status
   // by id here rather than by role.)
   await expect(popup.locator('#status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
-  await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue('991 Vault Lane, Testville 00000');
+  await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue(VAULT);
   expect(planReqs()).toHaveLength(1);
-  expect(requests.join('')).not.toContain('221 Baker Rd');
-  expect(await readFile('test-results/server.log', 'utf8')).not.toContain('221 Baker Rd');
+  expect(requests.join('')).not.toContain(SECRET);
+  expect(await readFile('test-results/server.log', 'utf8')).not.toContain(SECRET);
 });
 
-test('a second run re-arms the preview after the first is superseded', async ({ demo, baseURL }) => {
+test('a second run started mid-build supersedes the first and still reaches its own result', async ({ demo, baseURL }) => {
   test.setTimeout(240_000);
   const { page, popup } = demo;
-  await page.goto(`${baseURL}/fixture?variant=preview`);
+  // Multi-line page so the first build is genuinely in flight when the second run starts,
+  // exercising overlapping builds (per-build RecognizerSession ownership) and supersede.
+  await page.goto(`${baseURL}/fixture?variant=preview-multi`);
   await page.bringToFront();
   const terminal = /region\(s\) masked locally|Preview withheld/;
 
-  // First run: let its preview reach a terminal state.
   await popup.getByRole('button', { name: 'Run private fill' }).click();
-  await expect(popup.locator('#preview-status')).toContainText(terminal, { timeout: 150_000 });
-  await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
-  await page.getByLabel('Shipping address', { exact: true }).fill(''); // a filled field blocks the next run
+  // Start the second run WHILE the first build is in flight (fire it synchronously the moment
+  // "Building…" appears, before the first fill even completes -- so the field is still empty).
+  const started = await popup.evaluate(async () => {
+    const ps = document.querySelector('#preview-status')!;
+    const t0 = Date.now();
+    while (ps.textContent !== 'Building local sanitized preview…') {
+      if (Date.now() - t0 > 30_000) return false;
+      await new Promise(r => setTimeout(r, 20));
+    }
+    (document.querySelector('#run') as HTMLButtonElement).click();
+    return true;
+  });
+  expect(started).toBe(true);
 
-  // Second run: run.click() calls supersedePreview(), which aborts the first controller AND
-  // installs a fresh one. If the fresh controller were not installed, this second build would
-  // get a pre-aborted signal and always withhold 'cancelled' / never mask. It must instead
-  // reach its own real terminal state.
-  await popup.getByRole('button', { name: 'Run private fill' }).click();
+  // supersedePreview() aborted the first controller and installed a fresh one; the first
+  // build's abandoned result must never surface, and the second build must reach its own real
+  // terminal state (not a pre-aborted 'cancelled').
   await expect(popup.locator('#preview-status')).toContainText(terminal, { timeout: 150_000 });
   const finalText = (await popup.locator('#preview-status').textContent()) ?? '';
-  expect(finalText).not.toContain('run superseded'); // the current run's own signal is live, not aborted
+  expect(finalText).not.toContain('cancelled'); // the current run's own signal is live
   await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+});
+
+test('Cancel during an in-flight preview build abandons it and never publishes a result', async ({ demo, baseURL }) => {
+  test.setTimeout(180_000);
+  const { page, popup } = demo;
+  // Eight structural lines => an eight-call build that runs for a few seconds; "Building…" is
+  // set synchronously when the capture arrives, so acting on it lands mid-build.
+  await page.goto(`${baseURL}/fixture?variant=preview-multi`);
+  await page.bringToFront();
+  await popup.getByRole('button', { name: 'Run private fill' }).click();
+
+  // Catch the build mid-flight and fire Cancel as a synchronous DOM click (no Playwright
+  // actionability wait) so it lands within a few ms of "Building…" appearing, well before the
+  // multi-second build finishes.
+  const cancelledInFlight = await popup.evaluate(async () => {
+    const ps = document.querySelector('#preview-status')!;
+    const btn = document.querySelector('#cancel') as HTMLButtonElement;
+    const t0 = Date.now();
+    while (ps.textContent !== 'Building local sanitized preview…') {
+      if (Date.now() - t0 > 30_000) return { ok: false, reason: 'never started building' };
+      await new Promise(r => setTimeout(r, 20));
+    }
+    if (btn.disabled) return { ok: false, reason: 'cancel disabled during build' };
+    btn.click();
+    return { ok: true, statusAfter: ps.textContent };
+  });
+  expect(cancelledInFlight).toEqual({ ok: true, statusAfter: 'Not sent. Preview cancelled.' });
+
+  // Abandoned: explicit terminal state, no masked image, and it STAYS that way past the point
+  // the abandoned build would have finished internally -- its aborted result is never published.
+  await expect(popup.locator('#preview-status')).toHaveText('Not sent. Preview cancelled.');
+  await expect(popup.locator('#preview-image')).toBeHidden();
+  await page.waitForTimeout(15_000);
+  await expect(popup.locator('#preview-status')).toHaveText('Not sent. Preview cancelled.');
+  await expect(popup.locator('#preview-image')).toBeHidden();
 });
 
 test('target replacement during delayed planning blocks the fill', async ({ demo }) => {

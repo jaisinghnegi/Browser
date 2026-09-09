@@ -15,7 +15,12 @@ let generation = 0;
 // token below, guarantees a superseded build's result is never published to the DOM.
 let previewAbort = new AbortController();
 function supersedePreview() { previewAbort.abort(); previewAbort = new AbortController(); }
-function busy(value: boolean) { run.disabled = value; cancel.disabled = !value; }
+// The preview build deliberately outlives the fill flow, so Cancel must stay usable until
+// EITHER the task or the preview settles -- not be forced off the moment RESULT arrives.
+let taskBusy = false;
+let previewBuilding = false;
+function refreshCancel() { cancel.disabled = !(taskBusy || previewBuilding); }
+function busy(value: boolean) { taskBusy = value; run.disabled = value; refreshCancel(); }
 function resetPreview() {
   previewStatus.textContent = 'Not sent. Local-only preview.';
   previewImage.classList.add('hidden');
@@ -24,6 +29,7 @@ function resetPreview() {
 run.addEventListener('click', () => {
   generation++;
   supersedePreview();
+  previewBuilding = false;
   busy(true); status.textContent = 'Capturing locally…'; metrics.textContent = ''; payload.textContent = 'No request sent.';
   resetPreview();
   // A toolbar-action popup reports the browser window it's anchored to here (it has no
@@ -31,7 +37,18 @@ run.addEventListener('click', () => {
   // more reliable than the background service worker guessing "current window" itself.
   void chrome.windows.getCurrent().then(w => port.postMessage({ type: 'START', windowId: w.id }));
 });
-cancel.addEventListener('click', () => { generation++; supersedePreview(); port.postMessage({ type: 'CANCEL' }); });
+cancel.addEventListener('click', () => {
+  generation++;
+  const wasBuilding = previewBuilding;
+  supersedePreview();
+  previewBuilding = false;
+  refreshCancel();
+  // The aborted build's own .then returns early (signal aborted) and won't touch the UI, so
+  // set the terminal preview state here whenever a build was actually in flight -- regardless
+  // of whether the fill task was still running too.
+  if (wasBuilding) previewStatus.textContent = 'Not sent. Preview cancelled.';
+  port.postMessage({ type: 'CANCEL' });
+});
 port.onMessage.addListener(message => {
   if (message.type === 'CAPTURE') {
     const token = generation;
@@ -47,6 +64,8 @@ port.onMessage.addListener(message => {
     // what background.ts actually sends. A failure here only means "no local preview shown".
     if (message.textRegions?.supported) {
       previewStatus.textContent = 'Building local sanitized preview…';
+      previewBuilding = true;
+      refreshCancel();
       const regions = message.textRegions.regions as TextRegion[];
       // The preview outlives the fill flow: normal completion posts RESULT, which bumps
       // `generation`, so `generation` must NOT gate the preview here or every real preview is
@@ -73,7 +92,8 @@ port.onMessage.addListener(message => {
             previewStatus.textContent = `Not sent. Preview withheld ${reasonText}.`;
           }
         })
-        .catch(() => { if (!signal.aborted) previewStatus.textContent = 'Not sent. Preview unavailable.'; });
+        .catch(() => { if (!signal.aborted) previewStatus.textContent = 'Not sent. Preview unavailable.'; })
+        .finally(() => { if (signal === previewAbort.signal) { previewBuilding = false; refreshCancel(); } });
     } else {
       previewStatus.textContent = 'Not sent. Preview unavailable (page contains unsupported content for local analysis).';
     }
@@ -86,4 +106,7 @@ port.onMessage.addListener(message => {
     status.dataset.reason = message.reason ?? '';
   }
 });
-port.onDisconnect.addListener(() => { generation++; supersedePreview(); busy(false); run.disabled = true; status.textContent = 'Connection closed. Reopen the extension.'; });
+port.onDisconnect.addListener(() => {
+  generation++; supersedePreview(); previewBuilding = false; busy(false);
+  run.disabled = true; status.textContent = 'Connection closed. Reopen the extension.';
+});
