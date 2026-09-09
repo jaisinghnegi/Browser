@@ -41,12 +41,15 @@ Override with `PLANNER_MODE=deterministic`, `VLM_BASE_URL=...`, or `PORT=...` (a
 before any process is touched). These are local dev processes, not an installed service —
 they stop on `demo:down` or reboot.
 
-`up`/`down` act on a process **only** when its command line is unmistakably this workspace's
-backend on the configured port (our `.venv` Python + `uvicorn server.main:app` + `--port N`),
-tracked in `test-results/backend.pid.json`. An unrelated listener on the port — likely with a
-`PORT` override — is left alone and `up` aborts with a collision message. Graceful stop is
-tried before force. The pure ownership check is unit-tested (`npm test`); a slow
-subprocess/real-uvicorn regression is `npm run test:launcher`.
+`up`/`down` signal a process **only** when it is one this launcher started *and recorded*: its
+PID must be in the current-format `test-results/backend.pid.json` for this workspace and port,
+and the live process must still carry **both** the recorded OS start identity (so PID reuse
+can't turn stale metadata into ownership) **and** our exact command line (`.venv` Python +
+`uvicorn server.main:app` + `--port N`). Anything else on the port — an unrelated app, *or* a
+`uvicorn server.main:app` you started by hand — is an unknown collision: it is left running and
+`up` aborts. Legacy/malformed metadata authorises nothing. Graceful stop is tried before
+force, with ownership re-verified in between. Pure predicates are unit-tested (`npm test`); a
+slow subprocess/real-uvicorn regression is `npm run test:launcher`.
 
 ### Steps
 

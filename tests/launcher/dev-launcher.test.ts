@@ -1,24 +1,23 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
 import { mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 // Slow integration proof for scripts/dev.mjs ownership -- spawns real `node scripts/dev.mjs`
-// (and, in one case, a real uvicorn). NOT in the default `npm test`; run `npm run test:launcher`.
-// The fast, pure ownership predicate is covered by tests/dev-ownership.test.ts.
+// and, in some cases, a real uvicorn. NOT in the default `npm test`; run `npm run test:launcher`.
+// The pure ownership predicates are covered fast by tests/dev-ownership.test.ts.
 
 const REPO = process.cwd();
+const PY = resolve(process.platform === 'win32' ? '.venv/Scripts/python.exe' : '.venv/bin/python');
 const cleanups: Array<() => void> = [];
 afterEach(() => { while (cleanups.length) cleanups.pop()!(); });
 
-function freePort(): Promise<number> {
-  return new Promise(res => {
-    const s = createServer();
-    s.listen(0, '127.0.0.1', () => { const p = (s.address() as any).port; s.close(() => res(p)); });
-  });
-}
+const freePort = (): Promise<number> => new Promise(res => {
+  const s = createServer();
+  s.listen(0, '127.0.0.1', () => { const p = (s.address() as any).port; s.close(() => res(p)); });
+});
 async function sentinel(port: number): Promise<Server> {
   const s = createServer((_r, w) => w.end('sentinel'));
   await new Promise<void>(ok => s.listen(port, '127.0.0.1', ok));
@@ -35,6 +34,9 @@ function tmpPidfile() {
   return join(dir, 'backend.pid.json');
 }
 const isAlive = (pid: number) => { try { process.kill(pid, 0); return true; } catch (e: any) { return e.code === 'EPERM'; } };
+const httpUp = async (port: number) => {
+  try { return (await fetch(`http://127.0.0.1:${port}/health`)).ok; } catch { return false; }
+};
 
 describe('dev.mjs launcher ownership (slow)', () => {
   it('bad config aborts before touching any process', () => {
@@ -43,28 +45,59 @@ describe('dev.mjs launcher ownership (slow)', () => {
     expect(`${r.stdout}${r.stderr}`).toMatch(/PORT must be/);
   });
 
-  it('refuses `up` on a port held by an unrelated process; leaves it alive', async () => {
+  it('refuses `up` on a port held by an UNRELATED process; leaves it alive', async () => {
     const port = await freePort();
     const s = await sentinel(port);
     const pidfile = tmpPidfile();
     const r = dev('up', { PORT: String(port), PLANNER_MODE: 'deterministic', DEV_PIDFILE: pidfile });
     expect(r.status).not.toBe(0);
-    expect(`${r.stdout}${r.stderr}`).toMatch(/unknown process|not touching/i);
+    expect(`${r.stdout}${r.stderr}`).toMatch(/did not start it|not touching/i);
     expect(s.listening).toBe(true);
     expect(existsSync(pidfile)).toBe(false);
   }, 90_000);
+
+  it('refuses `up` when a MATCHING workspace uvicorn is on the port but was started manually (unrecorded)', async () => {
+    const port = await freePort();
+    const pidfile = tmpPidfile();
+    // The exact command dev.mjs would run -- but started by hand, so there is no pidfile.
+    const manual = spawn(PY, ['-m', 'uvicorn', 'server.main:app', '--host', '127.0.0.1', '--port', String(port), '--no-access-log'],
+      { cwd: REPO, env: { ...process.env, PLANNER_MODE: 'deterministic' }, stdio: 'ignore', detached: false });
+    cleanups.push(() => { try { process.kill(manual.pid!); } catch { /* */ } });
+    for (let i = 0; i < 40 && !(await httpUp(port)); i++) await new Promise(r => setTimeout(r, 500));
+    expect(await httpUp(port)).toBe(true);
+
+    const r = dev('up', { PORT: String(port), PLANNER_MODE: 'deterministic', DEV_PIDFILE: pidfile });
+    expect(r.status, r.stdout + r.stderr).not.toBe(0);
+    expect(`${r.stdout}${r.stderr}`).toMatch(/did not start|not touching/i);
+    expect(isAlive(manual.pid!)).toBe(true);       // the manual backend must survive
+    expect(await httpUp(port)).toBe(true);
+    expect(existsSync(pidfile)).toBe(false);
+  }, 120_000);
 
   it('a forged pidfile naming an unrelated live pid cannot make `down` kill it', async () => {
     const port = await freePort();
     const s = await sentinel(port);
     const pidfile = tmpPidfile();
-    writeFileSync(pidfile, JSON.stringify({ pids: [process.pid], childPid: process.pid, port, cwd: REPO,
-      python: 'x', plannerMode: 'vlm', vlmBaseUrl: 'http://127.0.0.1:8973', command: 'forged', startedAt: 'x' }));
+    writeFileSync(pidfile, JSON.stringify({ version: 2, port, cwd: REPO, python: 'x',
+      plannerMode: 'vlm', vlmBaseUrl: 'http://127.0.0.1:8973', command: 'forged', startedAt: 'x',
+      pids: [{ pid: process.pid, start: 'not-the-real-start' }] }));
     const r = dev('down', { PORT: String(port), DEV_PIDFILE: pidfile });
-    expect(r.status).toBe(0);                 // nothing WE own -> no-op success
+    expect(r.status).toBe(0);
     expect(isAlive(process.pid)).toBe(true);
     expect(s.listening).toBe(true);
-    expect(existsSync(pidfile)).toBe(false);  // stale metadata removed
+    expect(existsSync(pidfile)).toBe(false); // untrusted metadata dropped
+  }, 90_000);
+
+  it('legacy (v1) metadata authorises nothing: `down` is a no-op and drops the file', async () => {
+    const port = await freePort();
+    const s = await sentinel(port);
+    const pidfile = tmpPidfile();
+    writeFileSync(pidfile, JSON.stringify({ pids: [process.pid], port, cwd: REPO })); // no version:2, plain pids
+    const r = dev('down', { PORT: String(port), DEV_PIDFILE: pidfile });
+    expect(r.status).toBe(0);
+    expect(isAlive(process.pid)).toBe(true);
+    expect(s.listening).toBe(true);
+    expect(existsSync(pidfile)).toBe(false);
   }, 90_000);
 
   it('owned up -> status -> down starts and stops a real backend', async () => {
@@ -85,8 +118,6 @@ describe('dev.mjs launcher ownership (slow)', () => {
     const down = dev('down', env);
     expect(down.status, down.stdout + down.stderr).toBe(0);
     expect(existsSync(pidfile)).toBe(false);
-
-    const free = await freePort().then(() => sentinel(port)).then(x => x.listening).catch(() => false);
-    expect(free).toBe(true); // port genuinely released
+    expect(await httpUp(port)).toBe(false); // port released
   }, 120_000);
 });

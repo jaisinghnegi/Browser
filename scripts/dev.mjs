@@ -1,10 +1,13 @@
-// One launcher/status/stop for the local demo backend. It owns EXACTLY the one FastAPI
-// process it started -- identified by a PID-metadata file plus a live command-line check --
-// and never touches anything else on the port.
+// One launcher/status/stop for the local demo backend. It signals ONLY a process it started
+// AND recorded: a PID must be in the current-format pidfile for this workspace+port, and the
+// live process at that PID must still carry BOTH the recorded OS start identity (defeats PID
+// reuse) AND our exact command-line signature. A matching-but-unrecorded listener -- e.g. a
+// `uvicorn server.main:app` a developer started by hand -- is an UNKNOWN COLLISION: reported,
+// left alive, and `up` aborts. Legacy/malformed metadata authorises nothing.
 //
-//   node scripts/dev.mjs up        start the backend (stop only our own stale one first)
+//   node scripts/dev.mjs up        start the backend (stop only our recorded one first)
 //   node scripts/dev.mjs status    report the backend and the model server
-//   node scripts/dev.mjs down      stop our backend (nonzero if a verified-owned one won't die)
+//   node scripts/dev.mjs down      stop our recorded backend (nonzero if it won't die)
 //
 // The llama.cpp model server on :8973 is a large personal artifact with its own launch;
 // `up`/`status` check it and print guidance, but never start or stop it. Not an OS service.
@@ -14,7 +17,9 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { openSync, mkdirSync, writeFileSync, readFileSync, renameSync, rmSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { isOwnedByCmdline } from './dev-ownership.mjs';
+import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable } from './dev-ownership.mjs';
+
+const PIDFILE_VERSION = 2;
 
 const isWin = process.platform === 'win32';
 const CWD = process.cwd();
@@ -67,23 +72,25 @@ function pidsOnPort(port) {
 
 function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } }
 
-function cmdlineOf(pid) {
+/** { cmdline, start } for a live pid, or null. `start` is the OS process creation time -- an
+ * immutable identity that a PID-reusing new process cannot forge. */
+function procInfo(pid) {
   try {
     if (isWin) {
       const out = execFileSync('powershell', ['-NoProfile', '-Command',
-        `(Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue).CommandLine`],
+        `Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue | ` +
+        `Select-Object -First 1 | ForEach-Object { $_.CreationDate.ToString('o') + '|' + $_.CommandLine }`],
         { encoding: 'utf8', timeout: SH_TIMEOUT });
-      return out.trim() || null;
+      const line = out.trim();
+      if (!line) return null;
+      const i = line.indexOf('|');
+      return i < 0 ? null : { start: line.slice(0, i), cmdline: line.slice(i + 1).trim() || null };
     }
-    return execFileSync('ps', ['-p', String(pid), '-o', 'args='], { encoding: 'utf8', timeout: SH_TIMEOUT }).trim() || null;
+    // POSIX: lstart is a fixed 24-char ctime string, then the full command.
+    const out = execFileSync('ps', ['-p', String(pid), '-o', 'lstart=,args='], { encoding: 'utf8', timeout: SH_TIMEOUT }).trim();
+    if (!out) return null;
+    return { start: out.slice(0, 24), cmdline: out.slice(25).trim() || null };
   } catch { return null; }
-}
-
-/** True only if `pid` is live AND its command line is unmistakably THIS workspace's backend on
- * `port` -- see dev-ownership.mjs for the pure predicate. */
-function isOwnedProcess(pid, port) {
-  if (!pid || !alive(pid)) return false;
-  return isOwnedByCmdline(cmdlineOf(pid), { py: PY, uvicornSig: UVICORN_SIG, port });
 }
 
 function readPidfile() {
@@ -95,39 +102,44 @@ function writePidfile(meta) {
   writeFileSync(tmp, JSON.stringify(meta, null, 2));
   renameSync(tmp, PIDFILE); // atomic replace
 }
+const removePidfile = () => { if (existsSync(PIDFILE)) rmSync(PIDFILE, { force: true }); };
 
-/** PIDs (from the pidfile) that are still a live, signature-matching backend for THIS
- * workspace on THEIR recorded port. Removes the pidfile if none survive. */
-function ownedBackendPids() {
+/** The ONLY processes this launcher may ever signal: PIDs RECORDED in a usable, current-format
+ * pidfile for this workspace+port whose LIVE process still matches BOTH the recorded start
+ * identity AND our command-line signature. A matching-but-unrecorded listener is NOT here --
+ * it is treated as an unknown collision. Returns [{ pid, start }]. */
+function ownedTargets(port) {
   const m = readPidfile();
-  if (!m || m.cwd !== CWD) { if (existsSync(PIDFILE)) rmSync(PIDFILE, { force: true }); return []; }
-  const live = (m.pids || []).filter(p => isOwnedProcess(p, m.port));
-  if (!live.length && existsSync(PIDFILE)) rmSync(PIDFILE, { force: true });
-  return live;
+  if (!pidfileIsUsable(m, { cwd: CWD, port })) return [];
+  const sig = { py: PY, uvicornSig: UVICORN_SIG, port };
+  return m.pids.filter(e => alive(e.pid) && verifyRecordedIdentity(e, procInfo(e.pid), sig));
 }
 
-const graceful = (pid) => { try { isWin ? execFileSync('taskkill', ['/PID', String(pid)], { stdio: 'ignore' }) : process.kill(pid, 'SIGTERM'); } catch { /* expected for a windowless detached child */ } };
+/** Drop the pidfile only when nothing it records is still a verified-live owned process
+ * (covers both "all owned PIDs exited" and legacy/malformed metadata that can't be trusted). */
+function dropPidfileIfStale(port) {
+  if (existsSync(PIDFILE) && !ownedTargets(port).length) removePidfile();
+}
+
+const graceful = (pid) => { try { isWin ? execFileSync('taskkill', ['/PID', String(pid)], { stdio: 'ignore' }) : process.kill(pid, 'SIGTERM'); } catch { /* windowless detached child ignores it */ } };
 const force = (pid) => { try { isWin ? execFileSync('taskkill', ['/F', '/PID', String(pid)], { stdio: 'ignore' }) : process.kill(pid, 'SIGKILL'); } catch { /* */ } };
 
-/** Stop `pid` ONLY while it still matches this backend's signature on `port`: graceful first,
- * force only after re-verifying ownership. Returns true when it is no longer alive. */
-async function stopOwned(pid, port, { label }) {
-  if (!isOwnedProcess(pid, port)) return true; // already gone / not ours
-  graceful(pid);
-  for (let i = 0; i < 20 && alive(pid); i++) await sleep(150);
-  if (alive(pid)) {
-    if (!isOwnedProcess(pid, port)) { console.error(`${label}: pid ${pid} no longer matches this backend; refusing to force-kill`); return false; }
-    force(pid);
-    for (let i = 0; i < 20 && alive(pid); i++) await sleep(150);
+/** Stop a RECORDED-owned entry: graceful first, force only after RE-verifying the same start
+ * identity + signature. Returns true once the pid is no longer alive. */
+async function stopRecorded(entry, port, { label }) {
+  const sig = { py: PY, uvicornSig: UVICORN_SIG, port };
+  if (!alive(entry.pid) || !verifyRecordedIdentity(entry, procInfo(entry.pid), sig)) return true; // gone / no longer ours
+  graceful(entry.pid);
+  for (let i = 0; i < 20 && alive(entry.pid); i++) await sleep(150);
+  if (alive(entry.pid)) {
+    if (!verifyRecordedIdentity(entry, procInfo(entry.pid), sig)) {
+      console.error(`${label}: pid ${entry.pid} no longer matches the recorded backend identity; refusing to force-kill`);
+      return false;
+    }
+    force(entry.pid);
+    for (let i = 0; i < 20 && alive(entry.pid); i++) await sleep(150);
   }
-  return !alive(pid);
-}
-
-/** Every signature-matching backend currently on `port` (pidfile PIDs + the live listener
- * tree), de-duplicated. */
-function matchingBackendsOn(port) {
-  const fromFile = (readPidfile()?.pids || []);
-  return [...new Set([...fromFile, ...pidsOnPort(port)])].filter(p => isOwnedProcess(p, port));
+  return !alive(entry.pid);
 }
 
 // ---------- http ----------
@@ -150,12 +162,10 @@ async function status() {
   const model = await httpJson(`${vlmBaseUrl}/health`);
   const ready = models.body?.models?.[0]?.ready;
   const listener = pidsOnPort(port);
-  const ownedHere = matchingBackendsOn(port);
-  const trackedHere = ownedBackendPids().length > 0;
+  const owned = ownedTargets(port); // recorded + identity-verified only
   console.log(`backend   :${port}   ${backend.ok ? 'up' : 'DOWN'}` +
     (backend.ok ? `   planner=${backend.body?.plannerMode ?? '?'}   model-ready=${ready}` : '') +
-    (listener.length ? `   pid=${listener.join(',')} ${
-      trackedHere ? '(launcher-owned)' : ownedHere.length ? '(matches this backend, no pidfile)' : '(not launcher-owned)'}` : ''));
+    (listener.length ? `   pid=${listener.join(',')} ${owned.length ? '(launcher-owned)' : '(not launcher-owned)'}` : ''));
   console.log(`model     ${vlmBaseUrl}   ${model.ok ? 'up' : 'DOWN'}`);
   if (!model.ok) console.log(`          -> start your llama-server on :8973 (see scripts/vlm-eval/README.md); ` +
     `backend still runs, chat/plan will report "unavailable" until it is up`);
@@ -164,22 +174,24 @@ async function status() {
   return backend.ok;
 }
 
+const sig = (port) => ({ py: PY, uvicornSig: UVICORN_SIG, port });
+const startOf = (pid) => procInfo(pid)?.start ?? null;
+
 async function up() {
   const { port, plannerMode, vlmBaseUrl } = config(); // validates, may exit(1), no process touched
 
-  // Stop only processes that are unmistakably THIS workspace's backend on THIS port: our venv
-  // python + `uvicorn server.main:app` + `--port <port>` (pidfile PIDs and/or the live
-  // listener tree). isOwnedProcess() can never match an unrelated app, even on an overridden
-  // port -- so an unknown listener is left alive and `up` aborts.
-  for (const p of matchingBackendsOn(port)) {
-    console.log(`stopping a matching backend on :${port} (pid ${p})`);
-    if (!await stopOwned(p, port, { label: 'up' })) fail(`could not stop matching backend pid ${p}`);
+  // 1) Stop ONLY our recorded, identity-verified backend(s).
+  for (const e of ownedTargets(port)) {
+    console.log(`stopping our recorded backend pid ${e.pid}`);
+    if (!await stopRecorded(e, port, { label: 'up' })) fail(`could not stop our recorded backend pid ${e.pid}`);
   }
-  if (existsSync(PIDFILE)) rmSync(PIDFILE, { force: true });
+  dropPidfileIfStale(port);
 
+  // 2) Anything still on the port -- including a workspace uvicorn a developer started by hand
+  //    (matching command line, but NOT recorded by this launcher) -- is an unknown collision.
   const others = pidsOnPort(port);
-  if (others.length) fail(`:${port} is held by an unknown process (pid ${others.join(', ')}); not touching it. ` +
-    `Use PORT=<free port> or free it yourself.`);
+  if (others.length) fail(`:${port} is held by a process this launcher did not start (pid ${others.join(', ')}); ` +
+    `not touching it. Stop it yourself or use PORT=<free port>.`);
 
   mkdirSync(resolve('test-results'), { recursive: true });
   const log = openSync(resolve('test-results/backend.log'), 'a');
@@ -189,35 +201,46 @@ async function up() {
     detached: true, stdio: ['ignore', log, log], windowsHide: true,
   });
   child.unref();
-  // Record everything up front so a crash mid-startup still leaves a cleanable trail.
-  const meta = { pids: [child.pid], childPid: child.pid, port, cwd: CWD, python: PY,
-    plannerMode, vlmBaseUrl, command: `${PY} ${args.join(' ')}`, startedAt: new Date().toISOString() };
-  writePidfile(meta);
+  // Record the child with its start identity immediately, so a crash mid-startup is cleanable.
+  let childStart = null;
+  for (let i = 0; i < 10 && childStart == null && alive(child.pid); i++) { childStart = startOf(child.pid); if (childStart == null) await sleep(200); }
+  const base = { version: PIDFILE_VERSION, port, cwd: CWD, python: PY, plannerMode, vlmBaseUrl,
+    command: `${PY} ${args.join(' ')}`, startedAt: new Date().toISOString() };
+  writePidfile({ ...base, pids: childStart ? [{ pid: child.pid, start: childStart }] : [], childPid: child.pid });
   console.log(`started backend (child pid ${child.pid}) (PLANNER_MODE=${plannerMode}, VLM_BASE_URL=${vlmBaseUrl}) -> test-results/backend.log`);
 
   const stopEverythingWeStarted = async () => {
-    for (const p of [...new Set([child.pid, ...(readPidfile()?.pids || []), ...pidsOnPort(port)])]) {
-      if (isOwnedProcess(p, port)) await stopOwned(p, port, { label: 'up' });
+    for (const pid of [...new Set([child.pid, ...pidsOnPort(port)])]) {
+      const info = procInfo(pid);
+      if (info && isOwnedByCmdline(info.cmdline, sig(port))) await stopRecorded({ pid, start: info.start }, port, { label: 'up' });
     }
-    if (existsSync(PIDFILE)) rmSync(PIDFILE, { force: true });
+    removePidfile();
   };
 
   for (let i = 0; i < 40; i++) {
-    // `python -m uvicorn` may hand the listening socket to a child, so the process that binds
-    // isn't always child.pid. Treat "our child gone AND nothing matching on the port" as a
-    // real startup failure; otherwise keep waiting for /health.
-    const owned = matchingBackendsOn(port);
-    if (!alive(child.pid) && !owned.length) { await stopEverythingWeStarted(); fail('backend process exited during startup; see test-results/backend.log'); }
+    // `python -m uvicorn` may hand the socket to a child, so the binder isn't always child.pid.
+    const listeners = pidsOnPort(port);
+    if (!alive(child.pid) && !listeners.length) { await stopEverythingWeStarted(); fail('backend process exited during startup; see test-results/backend.log'); }
     const h = await httpJson(`http://127.0.0.1:${port}/health`, 1000);
     if (h.ok) {
-      // The 200 must be a process WE recognise as this backend -- not an unrelated one that
-      // won a port race -- and it must report exactly the mode we asked for.
-      if (!owned.length) { await stopEverythingWeStarted(); fail('a process answered /health on this port but it is not our backend; aborting'); }
+      // Every process now on the port must be OUR backend signature -- not an unrelated one
+      // that won a race -- and /health must report exactly the mode we asked for.
+      const infos = listeners.map(pid => ({ pid, ...(procInfo(pid) || {}) }));
+      const foreign = infos.filter(x => !isOwnedByCmdline(x.cmdline, sig(port)));
+      if (!infos.length || foreign.length) {
+        await stopEverythingWeStarted();
+        fail(`another process is on :${port} but it is not our backend (pid ${(foreign[0]?.pid ?? '?')}); aborting`);
+      }
       if (h.body?.status !== 'ok' || h.body?.plannerMode !== plannerMode) {
         await stopEverythingWeStarted();
         fail(`/health did not report the expected mode (${plannerMode}); got ${JSON.stringify(h.body)}`);
       }
-      writePidfile({ ...meta, pids: [...new Set([child.pid, ...owned])] });
+      const pids = [];
+      for (const pid of new Set([child.pid, ...listeners])) {
+        const s = startOf(pid);
+        if (s) pids.push({ pid, start: s });
+      }
+      writePidfile({ ...base, pids, childPid: child.pid });
       console.log('backend healthy.\n');
       await status();
       process.exit(0);
@@ -230,22 +253,22 @@ async function up() {
 
 async function down() {
   const { port } = config();
-  const targets = matchingBackendsOn(port); // pidfile PIDs + live listener tree, signature-checked
+  const targets = ownedTargets(port); // recorded + identity-verified ONLY
   if (!targets.length) {
-    if (existsSync(PIDFILE) && !ownedBackendPids().length) rmSync(PIDFILE, { force: true }); // stale metadata only
+    dropPidfileIfStale(port); // clears legacy/malformed/all-exited metadata
     const others = pidsOnPort(port);
     console.log(others.length
-      ? `no launcher-owned backend; :${port} held by pid ${others.join(', ')} (not ours, left alone)`
+      ? `no launcher-owned backend; :${port} held by pid ${others.join(', ')} (this launcher did not start it -- left alone)`
       : 'no launcher-owned backend running');
     process.exit(0);
   }
   let allStopped = true;
-  for (const pid of targets) {
-    console.log(`stopping our backend pid ${pid}`);
-    if (!await stopOwned(pid, port, { label: 'down' })) allStopped = false;
+  for (const e of targets) {
+    console.log(`stopping our backend pid ${e.pid}`);
+    if (!await stopRecorded(e, port, { label: 'down' })) allStopped = false;
   }
-  if (existsSync(PIDFILE) && !ownedBackendPids().length) rmSync(PIDFILE, { force: true });
-  if (!allStopped) { console.error(`down: a verified-owned backend process did not stop`); process.exit(1); }
+  dropPidfileIfStale(port);
+  if (!allStopped) { console.error('down: a verified-owned backend process did not stop'); process.exit(1); }
   console.log(`:${port} released`);
 }
 
