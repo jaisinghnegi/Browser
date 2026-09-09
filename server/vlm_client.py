@@ -1,4 +1,4 @@
-"""Bounded HTTP client to a local llama-server instance -- NOT wired into /plan. Every failure
+"""Bounded HTTP client shared by the local planner and text chat. Every failure
 mode (unreachable, timeout, non-200, oversized, unparseable) raises VlmUnavailable; callers
 must never invent a fill action when this raises. No redirects, no environment-derived proxy
 (``trust_env=False``), a single total deadline, and the response body is capped while
@@ -47,6 +47,8 @@ async def plan_with_vlm(
     max_image_data_url_bytes: int = DEFAULT_MAX_IMAGE_DATA_URL_BYTES,
     max_prompt_chars: int = DEFAULT_MAX_PROMPT_CHARS,
     semaphore: asyncio.Semaphore | None = None,
+    conversation: list[dict[str, str]] | None = None,
+    max_output_tokens: int = 200,
 ) -> str:
     """Returns the raw model message content string, or raises VlmUnavailable.
 
@@ -66,6 +68,16 @@ async def plan_with_vlm(
             raise VlmUnavailable('image_data_url exceeds the size cap')
     if len(system_prompt) > max_prompt_chars or len(user_prompt) > max_prompt_chars:
         raise VlmUnavailable('prompt exceeds the length cap')
+    if conversation is not None:
+        if image_data_url is not None or not 1 <= len(conversation) <= 12:
+            raise VlmUnavailable('invalid conversation')
+        if any(m.get('role') not in ('user', 'assistant') or not isinstance(m.get('content'), str)
+               or set(m) != {'role', 'content'} for m in conversation):
+            raise VlmUnavailable('invalid conversation')
+        if sum(len(m['content']) for m in conversation) > max_prompt_chars:
+            raise VlmUnavailable('conversation exceeds the length cap')
+    if not 1 <= max_output_tokens <= 512:
+        raise VlmUnavailable('invalid output budget')
 
     user_content: list[dict] = []
     if image_data_url is not None:
@@ -74,12 +86,14 @@ async def plan_with_vlm(
     body = {
         'model': 'qwen3-vl-4b',
         'temperature': 0,
-        'max_tokens': 200,
+        'max_tokens': max_output_tokens,
         'messages': [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_content},
         ],
     }
+    if conversation is not None:
+        body['messages'] = [{'role': 'system', 'content': system_prompt}, *conversation]
 
     global _in_system
     sem = semaphore if semaphore is not None else _default_semaphore
@@ -135,3 +149,24 @@ async def plan_with_vlm(
     if not isinstance(content, str):
         raise VlmUnavailable('planner response content was not a string')
     return content
+
+
+async def chat_with_vlm(
+    *,
+    base_url: str,
+    system_prompt: str,
+    conversation: list[dict[str, str]],
+    timeout_s: float = 30.0,
+    max_output_tokens: int = 512,
+    max_prompt_chars: int = DEFAULT_MAX_PROMPT_CHARS,
+    semaphore: asyncio.Semaphore | None = None,
+) -> str:
+    """Text-only chat turn against the local model. Thin wrapper over the shared
+    ``plan_with_vlm`` transport (same total deadline / admission cap / no-proxy / streamed
+    cap): NO image, NO tools, NO action semantics -- the reply is a plain string for display.
+    Every failure still raises VlmUnavailable."""
+    return await plan_with_vlm(
+        base_url=base_url, system_prompt=system_prompt, user_prompt='',
+        conversation=conversation, timeout_s=timeout_s, max_output_tokens=max_output_tokens,
+        max_prompt_chars=max_prompt_chars, semaphore=semaphore,
+    )

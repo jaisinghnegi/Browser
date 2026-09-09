@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from server.models import FillAction, PlannerRequest
 from server.vlm_planner import VlmPlanRejected, plan_action
+from server.chat import create_chat_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -54,6 +55,7 @@ def validate_local_vlm_url(url: str) -> str:
 # at process start only; never per-request. There is NO silent deterministic fallback in vlm mode.
 PLANNER_MODE = validate_planner_mode(os.environ.get('PLANNER_MODE', 'deterministic'))
 VLM_BASE_URL = validate_local_vlm_url(os.environ.get('VLM_BASE_URL', 'http://127.0.0.1:8973'))
+app.include_router(create_chat_router(VLM_BASE_URL))
 
 
 @app.exception_handler(RequestValidationError)

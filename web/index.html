@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Privacy Agent · Local workspace</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Privacy Agent home"><span class="mark" aria-hidden="true">◒</span> privacy<span class="brand-light">agent</span></a>
+    <button id="new-chat" class="new-chat"><span aria-hidden="true">＋</span> New conversation <span class="button-arrow" aria-hidden="true">↗</span></button>
+    <p class="eyebrow">WORKSPACE</p>
+    <div class="nav-active"><span aria-hidden="true">◌</span> Local chat <span class="small-pill">LIVE</span></div>
+    <a class="nav-link" href="/fixture?variant=preview" target="_blank" rel="noopener"><span aria-hidden="true">▣</span> Browser demo <span aria-hidden="true">↗</span></a>
+    <div class="sidebar-note"><span class="shield" aria-hidden="true">◇</span><h2>Your device. Your context.</h2><p>Chat runs through your local model. Browser captures stay in the privacy extension.</p></div>
+    <div class="sidebar-footer"><span class="status-dot"></span> LOCAL WORKSPACE <span>v0.1</span></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div><span class="breadcrumb">Workspace</span><span class="slash">/</span> Local chat</div>
+      <button id="mobile-new" class="mobile-new" aria-label="New conversation">＋</button>
+      <div class="model-picker"><span class="status-dot"></span><label for="model">Model</label><select id="model"><option value="qwen-local">Qwen · Local</option></select></div>
+    </header>
+    <section class="chat-area" aria-label="Conversation workspace">
+      <div id="welcome" class="welcome">
+        <div class="orbit" aria-hidden="true"><span>◒</span></div>
+        <div class="eyebrow">A LITTLE SPACE TO THINK</div>
+        <h1>Good ideas start<br>with a conversation.</h1>
+        <p class="intro">Meet your local assistant. Explore an idea, untangle a problem,<br class="desktop-break"> or make a plan—all powered by Qwen on this device.</p>
+        <div class="suggestions">
+          <button data-prompt="Explain how this project's browser privacy layer works in simple terms."><span class="card-icon">◇</span><strong>Understand the project</strong><span>Explore privacy, one step at a time.</span><b aria-hidden="true">↗</b></button>
+          <button data-prompt="Help me outline a short presentation for an on-device browser privacy agent."><span class="card-icon">✧</span><strong>Shape an idea</strong><span>Turn a rough thought into a plan.</span><b aria-hidden="true">↗</b></button>
+          <button data-prompt="Explain the difference between a locally hosted AI model and a cloud AI model."><span class="card-icon">⌘</span><strong>Learn something new</strong><span>Make the complex feel simpler.</span><b aria-hidden="true">↗</b></button>
+        </div>
+      </div>
+      <div id="messages" class="messages" role="log" aria-label="Chat messages" aria-live="polite"></div>
+      <div id="thinking" class="thinking" hidden><span class="pulse"></span> Qwen is thinking…</div>
+    </section>
+    <footer class="composer-area">
+      <p id="notice" class="notice" role="status" aria-live="polite"></p>
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="prompt">Message Qwen</label>
+        <textarea id="prompt" rows="2" maxlength="4000" placeholder="What's on your mind?"></textarea>
+        <div class="composer-bottom"><span><span class="status-dot"></span> Qwen on your device <span class="separator">·</span> Text only</span><button id="send" type="submit" aria-label="Send message">↑</button><button id="stop" type="button" hidden>Stop</button></div>
+      </form>
+      <p class="privacy-note">Typed messages go to local Qwen without automatic redaction. Chat cannot act on browser pages.<br>Conversation stays in this tab's memory. Refreshing or starting a new chat clears it.</p>
+    </footer>
+  </main>
+</body>
+</html>
