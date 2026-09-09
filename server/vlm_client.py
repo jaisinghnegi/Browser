@@ -34,7 +34,7 @@ async def plan_with_vlm(
     base_url: str,
     system_prompt: str,
     user_prompt: str,
-    image_data_url: str,
+    image_data_url: str | None = None,
     timeout_s: float = 30.0,
     max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
     max_image_data_url_bytes: int = DEFAULT_MAX_IMAGE_DATA_URL_BYTES,
@@ -43,28 +43,34 @@ async def plan_with_vlm(
 ) -> str:
     """Returns the raw model message content string, or raises VlmUnavailable.
 
+    ``image_data_url`` is optional: omit it for a text-only call (the reference-only /plan
+    path, which carries no screenshot -- protocol-2 image upload is separately gated). When
+    given it must be a bounded ``data:image/`` URL.
+
     Caller's responsibility: base_url must already be a trusted, loopback-only endpoint --
     this function does not itself restrict which host it's pointed at.
     """
     # Input caps, not just output caps: an oversized/malformed image or a runaway prompt
     # should never even reach the model process.
-    if not isinstance(image_data_url, str) or not image_data_url.startswith('data:image/'):
-        raise VlmUnavailable('image_data_url is not a data: image URL')
-    if len(image_data_url) > max_image_data_url_bytes:
-        raise VlmUnavailable('image_data_url exceeds the size cap')
+    if image_data_url is not None:
+        if not isinstance(image_data_url, str) or not image_data_url.startswith('data:image/'):
+            raise VlmUnavailable('image_data_url is not a data: image URL')
+        if len(image_data_url) > max_image_data_url_bytes:
+            raise VlmUnavailable('image_data_url exceeds the size cap')
     if len(system_prompt) > max_prompt_chars or len(user_prompt) > max_prompt_chars:
         raise VlmUnavailable('prompt exceeds the length cap')
 
+    user_content: list[dict] = []
+    if image_data_url is not None:
+        user_content.append({'type': 'image_url', 'image_url': {'url': image_data_url}})
+    user_content.append({'type': 'text', 'text': user_prompt})
     body = {
         'model': 'qwen3-vl-4b',
         'temperature': 0,
         'max_tokens': 200,
         'messages': [
             {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': [
-                {'type': 'image_url', 'image_url': {'url': image_data_url}},
-                {'type': 'text', 'text': user_prompt},
-            ]},
+            {'role': 'user', 'content': user_content},
         ],
     }
 

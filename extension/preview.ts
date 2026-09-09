@@ -106,6 +106,13 @@ export async function buildLocalPreview(
 
   // Any withheld reason from the pass -> NO image is produced (fail closed).
   if (pass.withheldReason) return withheld(pass.withheldReason, recognizeMs);
+  // One more check AFTER session.release() -- resolveRegions' own final check runs before this
+  // cleanup, so a release() (or an abort) that crosses the deadline must still reject here,
+  // before anything is drawn or encoded.
+  {
+    const post = interruptNow();
+    if (post) return withheld(post, recognizeMs);
+  }
   if (pass.uncertainRegionCount > 0) {
     // Conservative: one unreliable region withholds the whole preview rather than shipping a
     // partially-confident mask -- the same all-or-nothing instinct as Phase 1's real contract,
