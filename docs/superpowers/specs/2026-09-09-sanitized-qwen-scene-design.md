@@ -30,11 +30,11 @@ Add one required `scene` object to the reference-only plan request:
 ```json
 {
   "pageKind": "checkout",
-  "goal": "fill_shipping_address",
+  "goal": "fill-shipping-address",
   "controls": [
     {
       "target": "field_ref_1",
-      "fieldKind": "shipping_address",
+      "fieldKind": "shipping-address",
       "state": "empty"
     }
   ],
@@ -46,8 +46,9 @@ Add one required `scene` object to the reference-only plan request:
     }
   ],
   "localVision": {
-    "sensitiveRegionsMasked": 1,
-    "categories": ["address"],
+    "status": "passed",
+    "textPresence": "detected",
+    "preview": "local-only-best-effort",
     "pixelsShared": false,
     "ocrTextShared": false
   },
@@ -60,14 +61,18 @@ Initial enum set:
 | Field | Allowed values |
 |---|---|
 | `pageKind` | `checkout`, `form`, `unknown` |
-| `goal` | `fill_shipping_address` |
-| `fieldKind` | `shipping_address` |
+| `goal` | `fill-shipping-address` |
+| `fieldKind` | `shipping-address` |
 | control `state` | `empty`, `filled` |
 | capability `kind` | `address` |
-| vision category | `address` |
+| `localVision.status` | `passed` (the only value that reaches a request; a failed gate withholds the task) |
+| `localVision.textPresence` | `detected`, `not-detected` |
+| `localVision.preview` | `local-only-best-effort` |
 | allowed action | `fill` |
 
-The initial implementation supports one control, one private capability, at most eight detection categories, and counts from zero through eight. References retain the existing format and must match the authorized binding. Unknown keys and enum values are rejected.
+The initial implementation supports one control and one private capability. References retain the existing format and must match the authorized binding. Unknown keys and enum values are rejected.
+
+**`localVision` reports only actual gating facts** (correction to an earlier draft): the optional sanitized OCR preview completes *after* the plan request, so the scene must not carry a masked-region count or category list it cannot yet know. It carries: `status` (the detector gate result — always `passed` for a request that is sent at all), `textPresence` from the real detector output (`textPixels >= 8` → `detected`), and the fixed `preview: "local-only-best-effort"` marker. No fabricated counts/categories; no waiting on the preview.
 
 `pixelsShared` and `ocrTextShared` are fixed protocol assertions and must be `false`. Their presence makes the privacy property visible to Qwen and testable at both boundaries; they are not client-controlled feature flags.
 
@@ -120,6 +125,115 @@ If local observation cannot produce a valid scene, the task is withheld. There i
 - The live Qwen end-to-end test proves the sanitized scene reaches Qwen and the resulting action still passes binding, freshness, expiry, and one-use enforcement.
 - Popup tests verify the deterministic explanation and the exact outbound scene disclosure.
 
+## User-authorized scope: real sites + connected Qwen
+
+The user has authorized taking this from the synthetic fixture to a first bounded **real-site**
+capability, with Qwen wired into the extension flow:
+
+- **Trigger:** user-invoked (toolbar action). `activeTab` only — no `<all_urls>`, no broad host
+  permissions. Works on any active `http(s)` page.
+- **Target discovery:** the fixed fixture-URL restriction is replaced by **active-tab +
+  document binding** plus **conservative semantic discovery** of exactly ONE unambiguous,
+  visible, empty, editable shipping-address field. Discovery signals are read locally only and
+  never leave the device:
+  - `autocomplete` tokens: `street-address`, `address-line1`, or `shipping street-address` /
+    `shipping address-line1`;
+  - `name`/`id` matching `/(^|[_-])(street[_-]?address|address[_-]?line[_-]?1|addr(ess)?1?)($|[_-])/i`
+    combined with a shipping hint (`/ship/i` in `name`/`id`/form id) OR an associated `<label>`
+    whose text matches `/address/i` and not `/email|billing|company|phone/i`.
+  - Must be `<input type=text|search>` or a single-line `<textarea>`, `offsetParent` non-null,
+    inside the viewport, `getComputedStyle` visible, not `disabled`/`readOnly`, value `=== ''`,
+    and `document.elementFromPoint(center)` is the field itself.
+  - **> 1 candidate, 0 candidates, hidden/readonly/prefilled only → fail closed** (`data-reason`
+    `field-not-visible` / `field-not-empty` / `observation-failed`, generic popup text).
+- **Value source:** a **local address vault** the user enters once. Stored in
+  `chrome.storage.session` (in memory for the browser session, never written to disk, cleared
+  on browser close) behind a new `"storage"` permission. Honest lifetime disclosure in the
+  popup. The synthetic `991 Vault Lane` seed is used **only** on the bundled fixtures, never on
+  a real origin; on a real origin with no vault set, the task is withheld with a "set your
+  address first" prompt.
+- **Action:** `fill` one field. **No form submission**, no clicks, no navigation, no
+  multi-step or autonomous behavior. One-use, expiring, document/element/version-bound exactly
+  as today.
+- **Outbound:** protocol-2 request = the existing opaque refs + the bounded `scene`. Still
+  **no** raw URL, origin, DOM text, `<label>` text, OCR output, pixels, `data:image`, field
+  value, or vault value on the extension→backend or backend→Qwen wire.
+- **Planner:** real Qwen (`PLANNER_MODE=vlm`) selecting within the single pre-authorized
+  candidate, given the scene. `deterministic` mode still supported and honestly labelled.
+- **Fixtures stay** for reproducible tests; a **second, non-fixture origin** with realistic
+  address markup is added for real-site coverage.
+
+### Ref cross-checks (both sides)
+
+`scene.controls[0].target` must `===` `request.target`; `scene.privateCapabilities[0].valueRef`
+must `===` `request.valueRef`; `scene.controls[0].fieldKind` must `===` `request.fieldKind`;
+`scene.goal` fixed `fill-shipping-address`. Enforced in `buildPayload` (extension) **and** in
+the server scene validator before Qwen. Mismatch → reject before the model, generic rejection.
+
+### Deterministic explanation
+
+Popup shows one fixed sentence, chosen by the *actual* planner mode reported by `/health`:
+
+- vlm: `Qwen selected your saved address for the detected shipping-address field using
+  sanitized page context (no page text, URL, or pixels were sent).`
+- deterministic: `The demo planner selected your saved address for the detected
+  shipping-address field. No page text, URL, or pixels were sent.`
+
+No model prose. The "What leaves this device?" panel shows the exact `scene` JSON next to the
+payload.
+
+## Executable plan
+
+**Slice 1 — schema + backend scene contract** (`shared/protocol.schema.json`,
+`scripts/generate-contract.mjs` output, `server/models.py`, `server/vlm_planner.py`,
+`server/test_*`):
+- add `protocol: 2` request variant with required `scene` (draft-07, `additionalProperties:false`
+  throughout, bounded arrays len 1, enums per the table, `pixelsShared`/`ocrTextShared` `const false`).
+- `PlannerRequest` accepts protocol 1 (unchanged) or 2 (+scene). Pydantic `Scene` model,
+  server-owned, `extra='forbid'`, strict.
+- `vlm_planner`: validate scene → cross-check refs against the request → build the prompt from
+  the *server's* serialized scene + the existing candidate. Invalid scene → existing generic
+  rejection, never reaches Qwen. Deterministic `/plan` ignores `scene` (still valid).
+- tests: enum bounds / unknown keys / ref mismatch / false-assertion tamper never call the model;
+  one valid scene reaches the prompt exactly once; live-Qwen smoke with a scene.
+
+**Slice 2 — extension: discovery, binding, vault, scene** (`extension/content.ts`,
+`extension/background.ts`, `extension/config.ts`, `extension/protocol.ts`,
+`extension/generated/*`, `extension/manifest.json`, new `extension/vault.ts`,
+`extension/field-discovery.ts`):
+- `field-discovery.ts` (pure, unit-tested): given a serialisable description of candidate
+  inputs, return `{ ok, targetIndex }` or a fail-closed reason. No DOM in the tested unit.
+- `content.ts`: replace `getField()`'s fixed-URL + `#shipping-address` check with
+  `field-discovery` over real inputs; keep all freshness/rect/version machinery. `OBSERVE`
+  returns the field role + `state` + a `textPresence`-ready detector hook is not here (vision
+  stays in the popup) — `content.ts` reports only field facts.
+- `background.ts`: drop `FIXTURE_URL` exact match from `start()`/`current()`; bind to the
+  observed `tabId` + `documentId` + origin + version (origin now variable, still pinned per
+  task). Build `scene` from trusted state after `VISION` ok, using the real detector result for
+  `localVision.textPresence`. Send `protocol: 2` + `scene`.
+- `vault.ts`: `chrome.storage.session` get/set; popup "Saved address" editor; `manifest` gains
+  `"storage"`; on a real origin with no vault → withhold.
+- `protocol.ts`: `buildPayload` builds + validates the protocol-2 request incl. the ref
+  cross-checks; generated validator regenerated.
+- tests: `field-discovery` unit matrix (single match / ambiguous / hidden / readonly /
+  prefilled / wrong type); scene builder never reads the value.
+
+**Slice 3 — popup + real-site e2e + wire assertions** (`extension/popup.*`,
+`tests/e2e/*`, `server/main.py` second fixture route, `web`-free):
+- popup: deterministic explanation by planner mode; scene shown in the disclosure panel; vault
+  editor.
+- new fixture `fixtures/realistic-checkout.html` served at a **distinct path/origin-ish**
+  (`/site` — an ordinary-looking multi-field checkout with a real `autocomplete="street-address"`
+  field among email/name/city/billing decoys).
+- e2e: real-site fill success via the second fixture with a user-set vault address; ambiguous /
+  hidden / readonly / prefilled fields each fail closed; navigation + DOM mutation invalidate a
+  pending task; the `/plan` request body contains the scene and **none** of: the vault address,
+  any fixture OCR string, `data:image`, the page URL/origin, or any `<label>` text; the
+  backend→Qwen body likewise; one live-Qwen end-to-end proving the sanitized scene reaches Qwen
+  and the action still passes binding/freshness/expiry/one-use.
+
 ## Deferred work
 
-Redacted preview images, arbitrary websites, additional field kinds, multiple candidates, and free-form model explanations remain outside this change.
+Redacted preview images, *arbitrary* autonomous actions, form submission, multi-field or
+multi-step flows, additional field kinds, multiple candidates, and free-form model
+explanations remain outside this change.
