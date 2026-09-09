@@ -37,8 +37,16 @@ npm.cmd run demo:down     # stop the backend on :8171
 ```
 
 `demo:up` starts uvicorn detached (survives the shell) and logs to `test-results/backend.log`.
-Override with `PLANNER_MODE=deterministic`, `VLM_BASE_URL=...`, or `PORT=...`. These are local
-dev processes, not an installed service — they stop on `demo:down` or reboot.
+Override with `PLANNER_MODE=deterministic`, `VLM_BASE_URL=...`, or `PORT=...` (all validated
+before any process is touched). These are local dev processes, not an installed service —
+they stop on `demo:down` or reboot.
+
+`up`/`down` act on a process **only** when its command line is unmistakably this workspace's
+backend on the configured port (our `.venv` Python + `uvicorn server.main:app` + `--port N`),
+tracked in `test-results/backend.pid.json`. An unrelated listener on the port — likely with a
+`PORT` override — is left alone and `up` aborts with a collision message. Graceful stop is
+tried before force. The pure ownership check is unit-tested (`npm test`); a slow
+subprocess/real-uvicorn regression is `npm run test:launcher`.
 
 ### Steps
 

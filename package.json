@@ -14,6 +14,7 @@
     "build:e2e-isolated": "node -e \"process.env.BUILD_PORT='8172';process.env.BUILD_OUT_DIR='dist-e2e';process.env.BUILD_PREVIEW_PACE_MS='900';require('child_process').execSync('node scripts/build.mjs',{stdio:'inherit'})\"",
     "test:e2e:isolated": "node -e \"process.env.E2E_PORT='8172';process.env.E2E_EXT_DIR='dist-e2e';require('child_process').execSync('npx playwright test --grep-invert @vlm',{stdio:'inherit'})\"",
   "test:e2e:vlm": "node -e \"process.env.E2E_PORT='8172';process.env.E2E_EXT_DIR='dist-e2e';process.env.PLANNER_MODE='vlm';process.env.VLM_BASE_URL=process.env.VLM_BASE_URL||'http://127.0.0.1:8973';require('child_process').execSync('npx playwright test --grep @vlm',{stdio:'inherit'})\"",
+    "test:launcher": "vitest run --config vitest.launcher.config.ts",
     "demo:up": "node scripts/dev.mjs up",
     "demo:status": "node scripts/dev.mjs status",
     "demo:down": "node scripts/dev.mjs down",
