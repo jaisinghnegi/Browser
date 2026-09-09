@@ -18,3 +18,8 @@ details { margin-top: 18px; }
 summary { cursor: pointer; font-weight: 600; }
 pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #e8edf5; padding: 12px; border-radius: 7px; font-size: 10px; }
 .note { font-size: 11px; color: #526079; }
+/* Preview image visibility is toggled via .hidden (classList), never element.style -- the
+   extension_pages CSP is `style-src 'self'` with no 'unsafe-inline', which blocks CSSOM style
+   mutations and inline style= attributes alike. */
+#preview-image { max-width: 100%; }
+.hidden { display: none; }

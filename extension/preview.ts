@@ -3,7 +3,7 @@
 // actual outbound payload (protocol 1, field-kind + opaque IDs only) is completely unchanged;
 // this only builds an image kept in the popup's own memory for display, per the Phase 2 plan's
 // "local original vs actually sanitized preview" UX goal, without opening protocol 2.
-import { recognizeRegion, releaseRecognizer } from './recognize';
+import { recognizeRegion, releaseRecognizer, RecognizerInputOverflowError } from './recognize';
 import { classify } from './classify';
 
 export interface TextRegion { text: string; boxes: Array<{ x: number; y: number; width: number; height: number }> }
@@ -15,12 +15,20 @@ export interface PreviewResult {
   //   reliable threshold) -- falls back to no preview, same conservative instinct as Phase 1's
   //   real fail-closed behavior, just for this local-only display rather than the outbound path.
   outcome: 'redacted' | 'withheld';
-  withheldReason?: 'unsupported-structure' | 'uncertain-region' | 'too-many-regions';
+  withheldReason?: 'unsupported-structure' | 'uncertain-region' | 'too-many-regions'
+    | 'region-too-wide' | 'time-budget-exceeded' | 'cancelled';
   redactedDataUrl: string | null;
   maskedRegionCount: number;
   uncertainRegionCount: number;
   timingMs: { recognize: number; total: number };
 }
+
+// Wall-clock ceiling for the whole preview build. Checked between regions -- it bounds how many
+// more recognizer calls we start, NOT a running one: a synchronous onnxruntime-web WASM
+// `session.run` cannot be preempted mid-call from this thread. On a real page with a few
+// structural lines the whole build is well under this; hitting it means the environment is
+// slower than the preview is worth blocking on, so withhold.
+const MAX_PREVIEW_MS = 25_000;
 
 // Physical pixels. Below this rendered line height, upscaling to the recognizer's required
 // 48px input magnifies more than ~2.4x; fixtures/phase2/results' own tiny-text finding showed
@@ -47,8 +55,15 @@ const canonical = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 export async function buildLocalPreview(
   screenshotDataUrl: string, regions: TextRegion[], devicePixelRatio: number,
+  opts: { signal?: AbortSignal } = {},
 ): Promise<PreviewResult> {
   const start = performance.now();
+  const { signal } = opts;
+  const withheld = (reason: NonNullable<PreviewResult['withheldReason']>, recognize = 0): PreviewResult => ({
+    outcome: 'withheld', withheldReason: reason, redactedDataUrl: null,
+    maskedRegionCount: 0, uncertainRegionCount: 0,
+    timingMs: { recognize, total: performance.now() - start },
+  });
   if (!screenshotDataUrl.startsWith('data:image/png;base64,')) throw new Error('Invalid capture');
   const image = new Image();
   image.src = screenshotDataUrl;
@@ -69,21 +84,29 @@ export async function buildLocalPreview(
     })))
     .sort((a, b) => a.y - b.y);
 
-  if (lines.length > MAX_REGIONS) {
-    return {
-      outcome: 'withheld', withheldReason: 'too-many-regions', redactedDataUrl: null,
-      maskedRegionCount: 0, uncertainRegionCount: 0,
-      timingMs: { recognize: 0, total: performance.now() - start },
-    };
-  }
+  if (signal?.aborted) return withheld('cancelled');
+  if (lines.length > MAX_REGIONS) return withheld('too-many-regions');
 
   let uncertainRegionCount = 0;
+  let tooWide = false;
+  let cancelled = false;
+  let timedOut = false;
   const recognized: Array<{ box: typeof lines[number]; text: string; category: string | null }> = [];
   const recognizeStart = performance.now();
   try {
     for (const box of lines) {
+      // Between-region checks only: they bound how many more recognizer calls we start, not a
+      // call already running (WASM session.run is not preemptible from here).
+      if (signal?.aborted) { cancelled = true; break; }
+      if (performance.now() - start > MAX_PREVIEW_MS) { timedOut = true; break; }
       if (box.height < MIN_RELIABLE_LINE_HEIGHT_PX) { uncertainRegionCount++; continue; }
-      const rec = await recognizeRegion(ctx, box);
+      let rec;
+      try {
+        rec = await recognizeRegion(ctx, box);
+      } catch (e) {
+        if (e instanceof RecognizerInputOverflowError) { tooWide = true; break; }
+        throw e;
+      }
       if (rec.meanConfidence < MIN_CONFIDENCE) { uncertainRegionCount++; continue; }
       const text = canonical(rec.text);
       recognized.push({ box, text, category: classify(text) });
@@ -92,6 +115,12 @@ export async function buildLocalPreview(
     await releaseRecognizer();
   }
   const recognizeMs = performance.now() - recognizeStart;
+
+  // A region we could not reliably read (too wide to recognize without horizontal squish)
+  // withholds the whole preview -- it is never silently treated as "no PII here".
+  if (tooWide) return withheld('region-too-wide', recognizeMs);
+  if (cancelled) return withheld('cancelled', recognizeMs);
+  if (timedOut) return withheld('time-budget-exceeded', recognizeMs);
 
   if (uncertainRegionCount > 0) {
     // Conservative: one unreliable region withholds the whole preview rather than shipping a

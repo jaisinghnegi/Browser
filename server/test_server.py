@@ -59,6 +59,16 @@ def test_fixture_is_local_and_has_separate_visible_value():
     assert 'id="shipping-address"' in response.text
 
 
+def test_fixture_preview_variant_is_smaller_and_still_local():
+    response = client.get('/fixture', params={'variant': 'preview'})
+    assert response.status_code == 200
+    assert 'id="shipping-address"' in response.text
+    assert '14 Baker Rd, Testville 00000' in response.text  # a synthetic address to redact
+    assert '991 Vault Lane' not in response.text            # vault value never in the page
+    # default (no variant) is unchanged
+    assert '71 Visible Road' in client.get('/fixture').text
+
+
 def test_malformed_json_is_not_echoed():
     response = client.post('/plan', content='{"991 Vault Lane"', headers={'content-type': 'application/json'})
     assert response.status_code == 422

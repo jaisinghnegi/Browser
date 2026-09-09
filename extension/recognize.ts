@@ -3,6 +3,8 @@
 // module never sends anything anywhere -- it only decodes model output already computed
 // on-device into a string kept in memory.
 import * as ort from 'onnxruntime-web/wasm';
+import { RECOGNIZER_HEIGHT, planRecognizerInput, RecognizerInputOverflowError } from './recognize-bounds';
+export { planRecognizerInput, RecognizerInputOverflowError } from './recognize-bounds';
 
 // Set here too, defensively -- vision.ts also sets these (and both modules share the same
 // bundled ort instance in popup.js), but recognize.ts must not depend on call-order luck with
@@ -13,17 +15,6 @@ ort.env.wasm.wasmPaths = chrome.runtime.getURL('vendor/');
 ort.env.logLevel = 'error';
 
 export interface RecognizeResult { text: string; meanConfidence: number }
-
-const RECOGNIZER_HEIGHT = 48;
-// Absolute upper bound on the recognizer's input width, in pixels. This is NOT a tiling split
-// point -- profiling (scripts/phase2/bench-recognizer.mjs) showed one wide inference is
-// sublinear in width and plateaus near this size, while splitting a wide line into N fixed
-// 320px tiles is strictly slower (per-call overhead dominates) AND risks a seam dropping a
-// glyph, i.e. under-masking. So a wide line stays a single inference; this clamp only guards
-// against a pathologically wide DOM leaf allocating an enormous tensor. Beyond it the crop is
-// squished horizontally, which can degrade recognition -- callers treat a low-confidence result
-// conservatively (withhold), so that degradation fails safe rather than silently under-masking.
-const MAX_RECOGNIZER_WIDTH = 2048;
 
 let dictionary: string[] | undefined;
 
@@ -69,7 +60,8 @@ export async function recognizeRegion(
   const x = Math.max(0, Math.floor(box.x)), y = Math.max(0, Math.floor(box.y));
   const w = Math.max(1, Math.ceil(box.width)), h = Math.max(1, Math.ceil(box.height));
   const targetHeight = RECOGNIZER_HEIGHT;
-  const targetWidth = Math.min(MAX_RECOGNIZER_WIDTH, Math.max(8, Math.round(w * (targetHeight / h))));
+  const { targetWidth, overflow } = planRecognizerInput(box.width, box.height);
+  if (overflow) throw new RecognizerInputOverflowError(targetWidth);
   const cropCanvas = document.createElement('canvas');
   cropCanvas.width = targetWidth; cropCanvas.height = targetHeight;
   const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });

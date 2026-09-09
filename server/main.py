@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -30,7 +30,13 @@ def plan(request: PlannerRequest):
 
 
 @app.get('/fixture')
-def fixture():
-    return FileResponse(Path(__file__).parents[1] / 'fixtures/checkout.html',
+def fixture(request: Request):
+    # `?variant=preview` serves a smaller page whose structural text fits the local preview's
+    # bounded budget, so the Phase 2 preview path reaches an actual nonempty masked outcome
+    # (see tests/e2e/privacy.spec.ts). The extension's allowed-URL check strips the query
+    # string (background.ts normalizeFixtureUrl / content.ts normalizedHref), so both variants
+    # are the same single allowed page as far as the gating flow is concerned.
+    name = 'fixtures/preview-supported.html' if request.query_params.get('variant') == 'preview' else 'fixtures/checkout.html'
+    return FileResponse(Path(__file__).parents[1] / name,
                         headers={'Cache-Control': 'no-store',
                                  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'"})

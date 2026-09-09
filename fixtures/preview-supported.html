@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Agent — Supported preview fixture</title>
+  <style>
+    /* No CSS transforms, no <canvas>/<svg>/<iframe>, no shadow roots, no prefilled inputs or
+       placeholders: content.ts treats any of those as unsupported structure and withholds the
+       whole preview. Deliberately tiny (two text regions) so the bounded local preview reaches
+       an actual nonempty masked outcome quickly and reliably. */
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f5f8; color: #10203a; font: 16px/1.6 system-ui, sans-serif; }
+    main { width: 420px; margin: 40px auto; padding: 24px; background: #fff; border: 1px solid #d8e0eb; border-radius: 10px; }
+    .addr { margin: 0 0 18px; font-size: 20px; font-weight: 700; white-space: nowrap; letter-spacing: .2px; }
+    label { display: block; font-weight: 650; margin: 0 0 8px; }
+    input { display: block; width: 100%; font: inherit; padding: 10px; border: 2px solid #7589a4; border-radius: 8px; }
+  </style>
+</head>
+<body><main>
+  <p class="addr">14 Baker Rd, Testville 00000</p>
+  <label for="shipping-address">Shipping address</label>
+  <input id="shipping-address" name="shipping-address" type="text" autocomplete="off" spellcheck="false">
+</main></body></html>
