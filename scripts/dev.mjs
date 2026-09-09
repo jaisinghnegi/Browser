@@ -17,7 +17,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { openSync, mkdirSync, writeFileSync, readFileSync, renameSync, rmSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable } from './dev-ownership.mjs';
+import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable, descendantsOf, startedNoEarlierThan } from './dev-ownership.mjs';
 
 const PIDFILE_VERSION = 2;
 
@@ -72,25 +72,49 @@ function pidsOnPort(port) {
 
 function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } }
 
-/** { cmdline, start } for a live pid, or null. `start` is the OS process creation time -- an
- * immutable identity that a PID-reusing new process cannot forge. */
+/** { cmdline, start, ppid } for a live pid, or null. `start` is the OS process creation time --
+ * an immutable identity a PID-reusing new process cannot forge. */
 function procInfo(pid) {
   try {
     if (isWin) {
       const out = execFileSync('powershell', ['-NoProfile', '-Command',
         `Get-CimInstance Win32_Process -Filter "ProcessId=${pid}" -ErrorAction SilentlyContinue | ` +
-        `Select-Object -First 1 | ForEach-Object { $_.CreationDate.ToString('o') + '|' + $_.CommandLine }`],
+        `Select-Object -First 1 | ForEach-Object { $_.CreationDate.ToString('o') + '|' + $_.ParentProcessId + '|' + $_.CommandLine }`],
         { encoding: 'utf8', timeout: SH_TIMEOUT });
       const line = out.trim();
       if (!line) return null;
-      const i = line.indexOf('|');
-      return i < 0 ? null : { start: line.slice(0, i), cmdline: line.slice(i + 1).trim() || null };
+      const a = line.indexOf('|'), b = line.indexOf('|', a + 1);
+      if (a < 0 || b < 0) return null;
+      return { start: line.slice(0, a), ppid: Number(line.slice(a + 1, b)), cmdline: line.slice(b + 1).trim() || null };
     }
-    // POSIX: lstart is a fixed 24-char ctime string, then the full command.
-    const out = execFileSync('ps', ['-p', String(pid), '-o', 'lstart=,args='], { encoding: 'utf8', timeout: SH_TIMEOUT }).trim();
+    const out = execFileSync('ps', ['-p', String(pid), '-o', 'ppid=,lstart=,args='], { encoding: 'utf8', timeout: SH_TIMEOUT }).trim();
     if (!out) return null;
-    return { start: out.slice(0, 24), cmdline: out.slice(25).trim() || null };
+    const m = out.match(/^\s*(\d+)\s+(.{24})\s(.*)$/);
+    return m ? { ppid: Number(m[1]), start: m[2], cmdline: m[3].trim() || null } : null;
   } catch { return null; }
+}
+
+/** Snapshot of every process: Map<pid, { ppid, start }>. One shell call. Used for lineage. */
+function procList() {
+  const map = new Map();
+  try {
+    if (isWin) {
+      const out = execFileSync('powershell', ['-NoProfile', '-Command',
+        `Get-CimInstance Win32_Process | ForEach-Object { "$($_.ProcessId)|$($_.ParentProcessId)|$($_.CreationDate.ToString('o'))" }`],
+        { encoding: 'utf8', timeout: SH_TIMEOUT });
+      for (const line of out.split(/\r?\n/)) {
+        const p = line.split('|');
+        if (p.length >= 3 && p[0]) map.set(Number(p[0]), { ppid: Number(p[1]), start: p[2].trim() });
+      }
+    } else {
+      const out = execFileSync('ps', ['-eo', 'pid=,ppid=,lstart='], { encoding: 'utf8', timeout: SH_TIMEOUT });
+      for (const line of out.split(/\r?\n/)) {
+        const m = line.match(/^\s*(\d+)\s+(\d+)\s+(.{24})/);
+        if (m) map.set(Number(m[1]), { ppid: Number(m[2]), start: m[3] });
+      }
+    }
+  } catch { /* empty map -> nothing is provable as a descendant -> conservative */ }
+  return map;
 }
 
 function readPidfile() {
@@ -196,12 +220,15 @@ async function up() {
   mkdirSync(resolve('test-results'), { recursive: true });
   const log = openSync(resolve('test-results/backend.log'), 'a');
   const args = ['-m', 'uvicorn', 'server.main:app', '--host', '127.0.0.1', '--port', String(port), '--no-access-log'];
+  // Test-only seam: a delay here lets a regression race a matching process onto the port
+  // between preflight and our spawn. 0 in real use.
+  const spawnDelay = Number(process.env.DEV_SPAWN_DELAY_MS || 0);
+  if (spawnDelay > 0) await sleep(spawnDelay);
   const child = spawn(PY, args, {
     env: { ...process.env, PLANNER_MODE: plannerMode, VLM_BASE_URL: vlmBaseUrl },
     detached: true, stdio: ['ignore', log, log], windowsHide: true,
   });
   child.unref();
-  // Record the child with its start identity immediately, so a crash mid-startup is cleanable.
   let childStart = null;
   for (let i = 0; i < 10 && childStart == null && alive(child.pid); i++) { childStart = startOf(child.pid); if (childStart == null) await sleep(200); }
   const base = { version: PIDFILE_VERSION, port, cwd: CWD, python: PY, plannerMode, vlmBaseUrl,
@@ -209,35 +236,56 @@ async function up() {
   writePidfile({ ...base, pids: childStart ? [{ pid: child.pid, start: childStart }] : [], childPid: child.pid });
   console.log(`started backend (child pid ${child.pid}) (PLANNER_MODE=${plannerMode}, VLM_BASE_URL=${vlmBaseUrl}) -> test-results/backend.log`);
 
+  /** PIDs we are ALLOWED to signal/persist: the ChildProcess we spawned, plus processes proven
+   * to descend from it (ppid lineage) AND created no earlier than it. A matching command line
+   * alone never qualifies -- that is how a race-winning manual uvicorn would sneak in. */
+  const ownedByLineage = () => {
+    const procs = procList();
+    const line = descendantsOf(child.pid, procs);
+    const ok = new Set([child.pid]);
+    for (const pid of line) {
+      if (pid === child.pid) continue;
+      const info = procs.get(pid);
+      if (info && (!childStart || startedNoEarlierThan(info.start, childStart))) ok.add(pid);
+    }
+    return ok;
+  };
+
   const stopEverythingWeStarted = async () => {
-    for (const pid of [...new Set([child.pid, ...pidsOnPort(port)])]) {
-      const info = procInfo(pid);
-      if (info && isOwnedByCmdline(info.cmdline, sig(port))) await stopRecorded({ pid, start: info.start }, port, { label: 'up' });
+    // The direct child first (we hold its handle -- unambiguously ours), then proven descendants.
+    try { child.kill(); } catch { /* */ }
+    for (const pid of ownedByLineage()) {
+      graceful(pid);
+      for (let i = 0; i < 15 && alive(pid); i++) await sleep(150);
+      if (alive(pid)) force(pid);
     }
     removePidfile();
   };
 
   for (let i = 0; i < 40; i++) {
-    // `python -m uvicorn` may hand the socket to a child, so the binder isn't always child.pid.
     const listeners = pidsOnPort(port);
     if (!alive(child.pid) && !listeners.length) { await stopEverythingWeStarted(); fail('backend process exited during startup; see test-results/backend.log'); }
     const h = await httpJson(`http://127.0.0.1:${port}/health`, 1000);
     if (h.ok) {
-      // Every process now on the port must be OUR backend signature -- not an unrelated one
-      // that won a race -- and /health must report exactly the mode we asked for.
-      const infos = listeners.map(pid => ({ pid, ...(procInfo(pid) || {}) }));
-      const foreign = infos.filter(x => !isOwnedByCmdline(x.cmdline, sig(port)));
-      if (!infos.length || foreign.length) {
+      const ours = ownedByLineage();
+      const foreign = listeners.filter(p => !ours.has(p));
+      if (foreign.length) {
+        // Something won the bind race and it did NOT come from our child -> collision. Kill
+        // only what we started; leave the foreign process running.
         await stopEverythingWeStarted();
-        fail(`another process is on :${port} but it is not our backend (pid ${(foreign[0]?.pid ?? '?')}); aborting`);
+        fail(`:${port} was bound by a process this run did not spawn (pid ${foreign.join(', ')}); aborting, it was left alive`);
       }
+      if (!listeners.length) { await sleep(500); continue; } // health up but nothing LISTENING yet
       if (h.body?.status !== 'ok' || h.body?.plannerMode !== plannerMode) {
         await stopEverythingWeStarted();
         fail(`/health did not report the expected mode (${plannerMode}); got ${JSON.stringify(h.body)}`);
       }
+      // Persist ONLY proven-owned pids that are alive (the child + its listening descendants).
+      const procs = procList();
       const pids = [];
-      for (const pid of new Set([child.pid, ...listeners])) {
-        const s = startOf(pid);
+      for (const pid of ours) {
+        if (!alive(pid)) continue;
+        const s = procs.get(pid)?.start ?? startOf(pid);
         if (s) pids.push({ pid, start: s });
       }
       writePidfile({ ...base, pids, childPid: child.pid });

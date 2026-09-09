@@ -5,6 +5,11 @@ export function verifyRecordedIdentity(
   live: { cmdline?: string | null; start?: string } | null | undefined,
   opts: Sig,
 ): boolean;
+export function descendantsOf(
+  root: number,
+  procMap: Record<number, { ppid: number; start?: string }> | Map<number, { ppid: number; start?: string }>,
+): Set<number>;
+export function startedNoEarlierThan(descStart: string, childStart: string, slackMs?: number): boolean;
 export function pidfileIsUsable(
   meta: unknown,
   opts: { cwd: string; port: number },

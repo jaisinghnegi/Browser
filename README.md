@@ -41,15 +41,18 @@ Override with `PLANNER_MODE=deterministic`, `VLM_BASE_URL=...`, or `PORT=...` (a
 before any process is touched). These are local dev processes, not an installed service —
 they stop on `demo:down` or reboot.
 
-`up`/`down` signal a process **only** when it is one this launcher started *and recorded*: its
-PID must be in the current-format `test-results/backend.pid.json` for this workspace and port,
-and the live process must still carry **both** the recorded OS start identity (so PID reuse
-can't turn stale metadata into ownership) **and** our exact command line (`.venv` Python +
-`uvicorn server.main:app` + `--port N`). Anything else on the port — an unrelated app, *or* a
-`uvicorn server.main:app` you started by hand — is an unknown collision: it is left running and
-`up` aborts. Legacy/malformed metadata authorises nothing. Graceful stop is tried before
-force, with ownership re-verified in between. Pure predicates are unit-tested (`npm test`); a
-slow subprocess/real-uvicorn regression is `npm run test:launcher`.
+`up`/`down` signal a process **only** when it is one this launcher started. At `up` time a
+listener is adopted just when it is the `ChildProcess` spawned by that invocation **or** a
+proven descendant of it (parent-PID lineage from an OS process snapshot, plus a start time no
+earlier than the child's). A matching command line alone never qualifies — so a
+`uvicorn server.main:app` you start by hand, or a process that wins the bind race, is an
+unknown collision: it is left running and `up` aborts, unpersisted. Those proven PIDs are
+written to `test-results/backend.pid.json` (v2) with their OS start identities; `down` (a
+later, separate invocation) re-verifies each recorded PID's command line **and** start
+identity before signalling, so PID reuse can't resurrect stale ownership. Legacy/malformed
+metadata authorises nothing. Graceful stop precedes force, with ownership re-checked between.
+Pure predicates are unit-tested (`npm test`); slow subprocess/real-uvicorn regressions,
+including the post-preflight race, are `npm run test:launcher`.
 
 ### Steps
 

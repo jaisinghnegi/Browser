@@ -24,6 +24,36 @@ export function verifyRecordedIdentity(recorded, live, { py, uvicornSig, port })
   return isOwnedByCmdline(live.cmdline, { py, uvicornSig, port });
 }
 
+/** The set of PIDs that are `root` or a descendant of it, from a process snapshot
+ * (`{ [pid]: { ppid, start } }` or a Map). Cycle-safe. `root` is always included. This is the
+ * lineage proof: a process the launcher may adopt/kill must trace back to the ChildProcess it
+ * spawned -- a current command line is NOT sufficient. */
+export function descendantsOf(root, procMap) {
+  const get = procMap instanceof Map ? (k) => procMap.get(k) : (k) => procMap[k];
+  const entries = procMap instanceof Map ? [...procMap.entries()] : Object.entries(procMap).map(([k, v]) => [Number(k), v]);
+  const childrenByPpid = new Map();
+  for (const [pid, info] of entries) {
+    if (!info || !Number.isInteger(info.ppid)) continue;
+    (childrenByPpid.get(info.ppid) ?? childrenByPpid.set(info.ppid, []).get(info.ppid)).push(pid);
+  }
+  const out = new Set([root]);
+  const queue = [root];
+  while (queue.length) {
+    for (const c of childrenByPpid.get(queue.shift()) ?? []) if (!out.has(c)) { out.add(c); queue.push(c); }
+  }
+  void get; // reserved for callers that also want per-pid info
+  return out;
+}
+
+/** True iff `childStart` <= `descStart` (a real descendant is created no earlier than its
+ * ancestor). Both must be parseable timestamps; if either is not, returns false (conservative
+ * -- an unverifiable candidate is not adopted). */
+export function startedNoEarlierThan(descStart, childStart, slackMs = 2000) {
+  const d = Date.parse(descStart), c = Date.parse(childStart);
+  if (Number.isNaN(d) || Number.isNaN(c)) return false;
+  return d >= c - slackMs;
+}
+
 /** A pidfile is trustworthy only in the current format, for this workspace and port, with a
  * pids array of {pid,start} entries. Legacy/partial/foreign metadata authorises nothing. */
 export function pidfileIsUsable(meta, { cwd, port }) {

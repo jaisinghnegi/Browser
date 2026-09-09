@@ -100,6 +100,35 @@ describe('dev.mjs launcher ownership (slow)', () => {
     expect(existsSync(pidfile)).toBe(false);
   }, 90_000);
 
+  it('a matching process that WINS the post-preflight bind race is not killed or persisted', async () => {
+    const port = await freePort();
+    const pidfile = tmpPidfile();
+
+    // dev.mjs `up`: preflight (port free) -> sleep 3s (DEV_SPAWN_DELAY_MS) -> spawn its child.
+    const up = spawn(process.execPath, ['scripts/dev.mjs', 'up'], {
+      cwd: REPO, env: { ...process.env, PORT: String(port), PLANNER_MODE: 'deterministic',
+        DEV_PIDFILE: pidfile, DEV_SPAWN_DELAY_MS: '3000' },
+    });
+    let out = '';
+    up.stdout.on('data', d => (out += d));
+    up.stderr.on('data', d => (out += d));
+
+    // Race a matching manual uvicorn onto the port during the delay window (it is NOT a child
+    // of dev.mjs's spawned process).
+    await new Promise(r => setTimeout(r, 600));
+    const manual = spawn(PY, ['-m', 'uvicorn', 'server.main:app', '--host', '127.0.0.1', '--port', String(port), '--no-access-log'],
+      { cwd: REPO, env: { ...process.env, PLANNER_MODE: 'deterministic' }, stdio: 'ignore', detached: false });
+    cleanups.push(() => { try { process.kill(manual.pid!); } catch { /* */ } });
+    for (let i = 0; i < 40 && !(await httpUp(port)); i++) await new Promise(r => setTimeout(r, 250));
+
+    const code: number = await new Promise(res => up.on('exit', c => res(c ?? -1)));
+    expect(code, out).not.toBe(0);
+    expect(out).toMatch(/did not spawn/i);
+    expect(isAlive(manual.pid!)).toBe(true);         // the race winner survives
+    expect(await httpUp(port)).toBe(true);
+    expect(existsSync(pidfile)).toBe(false);         // and was never persisted as owned
+  }, 120_000);
+
   it('owned up -> status -> down starts and stops a real backend', async () => {
     const port = await freePort();
     const pidfile = tmpPidfile();
