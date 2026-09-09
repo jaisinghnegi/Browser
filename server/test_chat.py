@@ -1,9 +1,12 @@
+import asyncio
 import json
+import time
 
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
+from server import chat as chat_module
 from server.main import app
 
 
@@ -99,3 +102,20 @@ def test_models_ready_false_when_model_unreachable_without_leaking_details(monke
     body = response.json()['models'][0]
     assert body['ready'] is False
     assert 'private model internals' not in response.text
+
+
+def test_models_ready_probe_has_one_total_deadline(monkeypatch):
+    """A peer that stalls before sending headers must not hold /api/models open past the
+    single elapsed deadline (READY_PROBE_TIMEOUT_S)."""
+    monkeypatch.setattr(chat_module, 'READY_PROBE_TIMEOUT_S', 0.2)
+
+    async def slow_handler(_request):
+        await asyncio.sleep(1.5)  # far longer than the deadline
+        return httpx.Response(200, json={'status': 'ok'})
+
+    mock_model(monkeypatch, slow_handler)
+    started = time.monotonic()
+    body = TestClient(app).get('/api/models').json()['models'][0]
+    elapsed = time.monotonic() - started
+    assert body['ready'] is False
+    assert elapsed < 1.0  # bailed at the deadline, did not wait out the 1.5s stall

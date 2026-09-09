@@ -1,4 +1,5 @@
 """Local text chat. Never receives extension captures or executes model actions."""
+import asyncio
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -10,6 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from server.vlm_client import VlmUnavailable, chat_with_vlm
 
 WEB = Path(__file__).parents[1] / 'web'
+# One total elapsed bound on the readiness probe (connect + headers), separate from httpx's
+# phase timeouts. Small so /api/models stays snappy; a module attr so tests can shrink it.
+READY_PROBE_TIMEOUT_S = 2.0
 SYSTEM = (
     'You are the assistant in the local Privacy Agent application. Answer clearly and helpfully. '
     'This application connects to a local Qwen server. You have no browser control, file access, '
@@ -57,13 +61,18 @@ def create_chat_router(base_url: str) -> APIRouter:
         return FileResponse(WEB / 'app.css', media_type='text/css', headers={'Cache-Control': 'no-store'})
 
     async def _model_ready() -> bool:
-        """Short, bounded loopback health probe. Returns a plain boolean -- the model server's
-        response body is never surfaced to the client."""
-        try:
+        """Short, bounded loopback health probe. Returns a plain boolean; the model server's
+        response BODY is never read (only status/headers) and never surfaced. The whole probe
+        -- connect + headers -- is under ONE elapsed deadline, so a peer trickling bytes within
+        each read timeout can't hold this open or grow memory."""
+        async def _probe() -> bool:
             async with httpx.AsyncClient(timeout=1.5, trust_env=False) as client:
-                res = await client.get(f'{base_url}/health')
-            return res.status_code == 200
-        except (httpx.HTTPError, ValueError):
+                # `stream` returns once status + headers are in; we exit without touching body.
+                async with client.stream('GET', f'{base_url}/health') as res:
+                    return res.status_code == 200
+        try:
+            return await asyncio.wait_for(_probe(), timeout=READY_PROBE_TIMEOUT_S)
+        except (httpx.HTTPError, asyncio.TimeoutError, TimeoutError, ValueError):
             return False
 
     @router.get('/api/models')

@@ -54,23 +54,38 @@ test('model failure restores input for retry and stop suppresses late replies', 
   await expect(page.getByLabel('Message Qwen')).toBeEnabled();
 });
 
-test('model readiness is shown honestly: unavailable disables Send, recovers after re-probe', async ({ page }) => {
+test('unavailable blocks send (button AND keyboard); explicit "Check again" recovers without a generation call', async ({ page }) => {
   let probe = 0;
   await page.route('**/api/models', route => {
     probe++;
     route.fulfill({ json: { models: [{ id: 'qwen-local', name: 'Qwen', location: 'local', ready: probe > 1 }] } });
   });
+  let chatCalls = 0;
+  await page.route('**/api/chat', route => { chatCalls++; route.fulfill({ json: { provider: 'qwen-local', reply: 'ok' } }); });
+
   await page.goto('/');
   await expect(page.locator('#status-dot')).toHaveAttribute('data-state', 'unavailable');
   await expect(page.locator('#model-state')).toHaveText('unavailable');
   await expect(page.getByRole('button', { name: 'Send message' })).toBeDisabled();
 
-  // A 502 on send triggers a re-probe; the second probe reports ready, so the UI recovers.
-  await page.route('**/api/chat', route => route.fulfill({ status: 502, json: { error: 'unavailable' } }));
+  // Keyboard submission must also be blocked while unavailable -- no /api/chat, just guidance.
   await page.getByLabel('Message Qwen').fill('hi');
-  await page.keyboard.press('Enter'); // Send is disabled; Enter still submits the form
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#notice')).toContainText('Check again');
+  expect(chatCalls).toBe(0);
+
+  // The explicit re-probe control only re-checks /health -- it never sends a generation.
+  await page.getByRole('button', { name: 'Check again' }).click();
   await expect(page.locator('#status-dot')).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
   await expect(page.getByRole('button', { name: 'Send message' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Check again' })).toBeHidden();
+  expect(chatCalls).toBe(0); // recovery issued no chat request
+
+  // and now a real send works
+  await page.getByLabel('Message Qwen').fill('hi');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.locator('.message.assistant')).toContainText('ok');
+  expect(chatCalls).toBe(1);
 });
 
 test('mobile workspace has usable composer and reset without horizontal overflow', async ({ page }) => {

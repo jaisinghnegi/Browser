@@ -12,20 +12,28 @@ const composerDot = document.querySelector('#composer-dot');
 const modelState = document.querySelector('#model-state');
 const modelSelect = document.querySelector('#model');
 const composerModel = document.querySelector('#composer-model');
+const recheck = document.querySelector('#recheck');
 let history = [];
 let active = null;
 let ready = null; // null = unknown/checking, true = probed ready, false = probed unavailable
+let probing = false;
 
 const STATE_TEXT = { checking: 'checking…', ready: 'ready', unavailable: 'unavailable' };
 function renderModelState(state) {
   statusDot.dataset.state = state;
   composerDot.dataset.state = state;
   modelState.textContent = STATE_TEXT[state];
-  // Only a DEFINITIVE unavailable disables Send; while checking we stay optimistic.
+  // A DEFINITIVE unavailable disables Send AND blocks submit (see the form handler); while
+  // checking we stay optimistic. The explicit "Check again" control re-probes health only --
+  // it never sends a generation request to test availability.
   send.disabled = state === 'unavailable';
+  recheck.hidden = state !== 'unavailable';
+  recheck.disabled = probing;
 }
 
 async function refreshModel() {
+  if (probing) return;
+  probing = true;
   renderModelState('checking');
   ready = null;
   try {
@@ -37,12 +45,14 @@ async function refreshModel() {
       composerModel.textContent = model.name;
     }
     ready = model?.ready === true;
-    renderModelState(ready ? 'ready' : 'unavailable');
   } catch {
     ready = false;
-    renderModelState('unavailable');
+  } finally {
+    probing = false;
+    renderModelState(ready ? 'ready' : 'unavailable');
   }
 }
+recheck.addEventListener('click', () => { refreshModel(); });
 refreshModel();
 
 function addMessage(role, text) {
@@ -109,6 +119,10 @@ prompt.addEventListener('keydown', event => {
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (active || !prompt.value.trim()) return;
+  if (ready === false) { // definitively unavailable -- keyboard submit is blocked too
+    notice.textContent = 'Local Qwen isn’t responding. Use "Check again" once it’s running.';
+    return;
+  }
   const text = prompt.value.trim();
   const context = [...history, { role: 'user', content: text }];
   let trimmed = false;
