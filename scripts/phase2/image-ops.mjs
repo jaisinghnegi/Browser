@@ -53,8 +53,8 @@ export async function loadAndPreprocessForDetector(page, base64Png) {
 /** Crops a region (in original/full-resolution pixel space) from the full image, resizes to
  * fixed height 48 preserving aspect ratio (the recognizer's confirmed input contract -- see
  * models/README.md), and returns a BGR [-1,1]-normalized tensor plus the crop's pixel width. */
-export async function cropAndPreprocessForRecognizer(page, base64Png, box) {
-  return page.evaluate(async ({ dataUrl, box }) => {
+export async function cropAndPreprocessForRecognizer(page, base64Png, box, forceTargetWidth) {
+  return page.evaluate(async ({ dataUrl, box, forceTargetWidth }) => {
     const image = new Image();
     image.src = dataUrl;
     await image.decode();
@@ -62,7 +62,9 @@ export async function cropAndPreprocessForRecognizer(page, base64Png, box) {
     const w = Math.max(1, Math.min(image.naturalWidth - x, Math.ceil(box.width)));
     const h = Math.max(1, Math.min(image.naturalHeight - y, Math.ceil(box.height)));
     const targetHeight = 48;
-    const targetWidth = Math.max(8, Math.round(w * (targetHeight / h)));
+    // forceTargetWidth is used only by scripts/phase2/bench-recognizer.mjs; production callers
+    // omit it and get the aspect-preserving width.
+    const targetWidth = forceTargetWidth || Math.max(8, Math.round(w * (targetHeight / h)));
     const canvas = document.createElement('canvas');
     canvas.width = targetWidth; canvas.height = targetHeight;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -74,7 +76,7 @@ export async function cropAndPreprocessForRecognizer(page, base64Png, box) {
       input[c * plane + p] = (rgba[p * 4 + (2 - c)] / 255 - 0.5) / 0.5;
     }
     return { targetWidth, targetHeight, input: Array.from(input) };
-  }, { dataUrl: base64Png, box });
+  }, { dataUrl: base64Png, box, forceTargetWidth });
 }
 
 /** Draws opaque redaction boxes (full alpha, fixed color) directly into a fresh re-encode of
