@@ -45,6 +45,17 @@ export function descendantsOf(root, procMap) {
   return out;
 }
 
+/** May we FORCE-kill `recorded` ({pid,start}) right now? Only if, in the FRESH process
+ * snapshot `snap`, that exact PID still has the recorded start identity AND still descends
+ * from `rootPid`. Defeats the "descendant exited, PID reused during the graceful wait" race --
+ * the replacement has a different start time (and usually a different lineage). */
+export function mayForce(recorded, snap, rootPid) {
+  const get = snap instanceof Map ? (k) => snap.get(k) : (k) => snap[k];
+  const live = get(recorded.pid);
+  if (!live || !live.start || !recorded.start || String(live.start) !== String(recorded.start)) return false;
+  return descendantsOf(rootPid, snap).has(recorded.pid);
+}
+
 /** True iff `childStart` <= `descStart` (a real descendant is created no earlier than its
  * ancestor). Both must be parseable timestamps; if either is not, returns false (conservative
  * -- an unverifiable candidate is not adopted). */

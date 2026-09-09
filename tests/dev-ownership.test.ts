@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable, descendantsOf, startedNoEarlierThan } from '../scripts/dev-ownership.mjs';
+import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable, descendantsOf, startedNoEarlierThan, mayForce } from '../scripts/dev-ownership.mjs';
 
 const PY = 'C:\\Users\\dev\\proj\\.venv\\Scripts\\python.exe';
 const CWD = 'C:\\Users\\dev\\proj';
@@ -77,6 +77,42 @@ describe('startedNoEarlierThan — a real descendant is not created before its a
   it('false when either timestamp is unparseable (conservative)', () => {
     expect(startedNoEarlierThan('nope', '2026-01-01T00:00:00Z')).toBe(false);
     expect(startedNoEarlierThan('2026-01-01T00:00:00Z', '')).toBe(false);
+  });
+});
+
+describe('mayForce — re-verify identity + lineage in the fresh snapshot before a force-kill', () => {
+  const ROOT = 100;
+  const snap = (childPidStart: string, extra: Record<number, { ppid: number; start: string }> = {}) => ({
+    100: { ppid: 1, start: 'C0' },
+    200: { ppid: 100, start: childPidStart }, // the descendant we might force
+    ...extra,
+  });
+
+  it('allows force when the PID still has the recorded start AND still descends from root', () => {
+    expect(mayForce({ pid: 200, start: 'D0' }, snap('D0'), ROOT)).toBe(true);
+  });
+
+  it('REFUSES force when the start identity changed between graceful and force (PID reuse)', () => {
+    // recorded D0, but the live process at pid 200 in the fresh snapshot is D9 -> a different
+    // process took the PID during the wait.
+    expect(mayForce({ pid: 200, start: 'D0' }, snap('D9'), ROOT)).toBe(false);
+  });
+
+  it('REFUSES force when the PID is no longer in our lineage', () => {
+    const s: any = snap('D0');
+    s[200].ppid = 999; // reparented / different process entirely
+    expect(mayForce({ pid: 200, start: 'D0' }, s, ROOT)).toBe(false);
+  });
+
+  it('REFUSES force when the PID is gone from the snapshot', () => {
+    const s: any = snap('D0');
+    delete s[200];
+    expect(mayForce({ pid: 200, start: 'D0' }, s, ROOT)).toBe(false);
+  });
+
+  it('REFUSES force on blank/missing start identity', () => {
+    expect(mayForce({ pid: 200, start: '' }, snap('D0'), ROOT)).toBe(false);
+    expect(mayForce({ pid: 200, start: 'D0' }, snap(''), ROOT)).toBe(false);
   });
 });
 

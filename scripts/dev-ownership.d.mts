@@ -10,6 +10,11 @@ export function descendantsOf(
   procMap: Record<number, { ppid: number; start?: string }> | Map<number, { ppid: number; start?: string }>,
 ): Set<number>;
 export function startedNoEarlierThan(descStart: string, childStart: string, slackMs?: number): boolean;
+export function mayForce(
+  recorded: { pid: number; start: string },
+  snap: Record<number, { ppid: number; start?: string }> | Map<number, { ppid: number; start?: string }>,
+  rootPid: number,
+): boolean;
 export function pidfileIsUsable(
   meta: unknown,
   opts: { cwd: string; port: number },

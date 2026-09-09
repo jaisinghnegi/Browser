@@ -17,7 +17,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { openSync, mkdirSync, writeFileSync, readFileSync, renameSync, rmSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { isOwnedByCmdline, verifyRecordedIdentity, pidfileIsUsable, descendantsOf, startedNoEarlierThan } from './dev-ownership.mjs';
+import { verifyRecordedIdentity, pidfileIsUsable, descendantsOf, startedNoEarlierThan, mayForce } from './dev-ownership.mjs';
 
 const PIDFILE_VERSION = 2;
 
@@ -198,7 +198,6 @@ async function status() {
   return backend.ok;
 }
 
-const sig = (port) => ({ py: PY, uvicornSig: UVICORN_SIG, port });
 const startOf = (pid) => procInfo(pid)?.start ?? null;
 
 async function up() {
@@ -236,28 +235,34 @@ async function up() {
   writePidfile({ ...base, pids: childStart ? [{ pid: child.pid, start: childStart }] : [], childPid: child.pid });
   console.log(`started backend (child pid ${child.pid}) (PLANNER_MODE=${plannerMode}, VLM_BASE_URL=${vlmBaseUrl}) -> test-results/backend.log`);
 
-  /** PIDs we are ALLOWED to signal/persist: the ChildProcess we spawned, plus processes proven
-   * to descend from it (ppid lineage) AND created no earlier than it. A matching command line
-   * alone never qualifies -- that is how a race-winning manual uvicorn would sneak in. */
-  const ownedByLineage = () => {
+  /** Proven-owned descendants of our child as [{pid,start}] from a fresh snapshot: each PID
+   * descends from child.pid via lineage AND was created no earlier than it. child.pid itself
+   * is handled via its ChildProcess handle, never in this numeric set. */
+  const ownedDescendants = () => {
     const procs = procList();
-    const line = descendantsOf(child.pid, procs);
-    const ok = new Set([child.pid]);
-    for (const pid of line) {
+    const out = [];
+    for (const pid of descendantsOf(child.pid, procs)) {
       if (pid === child.pid) continue;
       const info = procs.get(pid);
-      if (info && (!childStart || startedNoEarlierThan(info.start, childStart))) ok.add(pid);
+      if (info && info.start && (!childStart || startedNoEarlierThan(info.start, childStart))) out.push({ pid, start: info.start });
     }
-    return ok;
+    return out;
   };
-
   const stopEverythingWeStarted = async () => {
-    // The direct child first (we hold its handle -- unambiguously ours), then proven descendants.
+    // 1) The direct child via its handle -- unambiguously ours, no numeric force needed later.
     try { child.kill(); } catch { /* */ }
-    for (const pid of ownedByLineage()) {
-      graceful(pid);
-      for (let i = 0; i < 15 && alive(pid); i++) await sleep(150);
-      if (alive(pid)) force(pid);
+    // 2) Proven descendants: capture {pid,start} BEFORE signalling; graceful; then force ONLY
+    //    if a fresh snapshot still shows the same PID with the same start identity AND lineage
+    //    (so a descendant that exited + had its PID reused during the wait is never force-killed).
+    const targets = ownedDescendants();
+    for (const t of targets) graceful(t.pid);
+    for (let i = 0; i < 15 && targets.some(t => alive(t.pid)); i++) await sleep(150);
+    try { if (alive(child.pid)) child.kill('SIGKILL'); } catch { /* */ }
+    const snap = procList();
+    for (const t of targets) {
+      if (!alive(t.pid)) continue;
+      if (mayForce(t, snap, child.pid)) force(t.pid);
+      else console.error(`up cleanup: pid ${t.pid} identity/lineage changed during teardown; not force-killing`);
     }
     removePidfile();
   };
@@ -267,7 +272,8 @@ async function up() {
     if (!alive(child.pid) && !listeners.length) { await stopEverythingWeStarted(); fail('backend process exited during startup; see test-results/backend.log'); }
     const h = await httpJson(`http://127.0.0.1:${port}/health`, 1000);
     if (h.ok) {
-      const ours = ownedByLineage();
+      const descendants = ownedDescendants();       // [{pid,start}], proven
+      const ours = new Set([child.pid, ...descendants.map(e => e.pid)]);
       const foreign = listeners.filter(p => !ours.has(p));
       if (foreign.length) {
         // Something won the bind race and it did NOT come from our child -> collision. Kill
@@ -280,14 +286,11 @@ async function up() {
         await stopEverythingWeStarted();
         fail(`/health did not report the expected mode (${plannerMode}); got ${JSON.stringify(h.body)}`);
       }
-      // Persist ONLY proven-owned pids that are alive (the child + its listening descendants).
-      const procs = procList();
+      // Persist ONLY proven-owned, still-alive pids: the child (with its captured start) plus
+      // its proven descendants -- each with the start identity from the same snapshot.
       const pids = [];
-      for (const pid of ours) {
-        if (!alive(pid)) continue;
-        const s = procs.get(pid)?.start ?? startOf(pid);
-        if (s) pids.push({ pid, start: s });
-      }
+      if (alive(child.pid) && childStart) pids.push({ pid: child.pid, start: childStart });
+      for (const e of descendants) if (alive(e.pid)) pids.push(e);
       writePidfile({ ...base, pids, childPid: child.pid });
       console.log('backend healthy.\n');
       await status();
