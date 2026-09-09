@@ -5,9 +5,9 @@
   <title>Privacy Agent — Slow-preview fixture</title>
   <style>
     /* No unsupported structure. main fits inside the 1000px e2e viewport so the field stays
-       fully visible. Eight moderately wide text lines (nowrap) => eight sequential recognizer
-       calls => the whole preview build runs for several seconds, long enough to exercise an
-       in-flight supersede/cancel deterministically. Exactly MAX_REGIONS regions. */
+       fully visible. Eight text regions (= MAX_REGIONS) => eight sequential recognizer calls;
+       combined with the isolated e2e build's BUILD_PREVIEW_PACE_MS this build stays in flight
+       for ~15s, long enough to exercise an in-flight supersede/cancel deterministically. */
     * { box-sizing: border-box; }
     body { margin: 0; background: #f3f5f8; color: #10203a; font: 16px/1.6 system-ui, sans-serif; }
     main { width: 880px; margin: 20px auto; padding: 24px; background: #fff; border: 1px solid #d8e0eb; border-radius: 10px; }

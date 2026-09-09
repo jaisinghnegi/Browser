@@ -13,6 +13,10 @@ const outDir = process.env.BUILD_OUT_DIR || 'dist';
 // the port fixed exactly as before; only an isolated e2e run opts into a different one, and
 // even then the value is baked into that specific build's files, never read at runtime.
 const port = Number(process.env.BUILD_PORT || 8171);
+// Test-only pacing: an artificial per-region delay in the local preview build so lifecycle
+// races are deterministic in e2e. 0 everywhere except the isolated e2e build (dead-code
+// eliminated when 0). See extension/global.d.ts.
+const previewPaceMs = Number(process.env.BUILD_PREVIEW_PACE_MS || 0);
 
 async function verified(path, sha256) {
   const data = await readFile(path).catch(() => {
@@ -41,7 +45,7 @@ for (const file of ['ort.wasm.min.mjs', 'ort-wasm-simd-threaded.mjs', 'ort-wasm-
   await copyFile(`node_modules/onnxruntime-web/dist/${file}`, `${outDir}/vendor/${file}`);
 }
 const common = { bundle: true, target: 'chrome120', sourcemap: false, logLevel: 'info',
-  define: { PRIVACY_AGENT_PORT: String(port) } };
+  define: { PRIVACY_AGENT_PORT: String(port), PREVIEW_PACE_MS: String(previewPaceMs) } };
 const configs = [
   { ...common, entryPoints: ['extension/background.ts'], outfile: `${outDir}/background.js`, format: 'esm' },
   { ...common, entryPoints: ['extension/content.ts'], outfile: `${outDir}/content.js`, format: 'iife' },

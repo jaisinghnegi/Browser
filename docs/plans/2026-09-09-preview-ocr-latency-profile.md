@@ -53,13 +53,20 @@ correction 2, printed alongside for reference only.)
   **withheld before inference**, never squished to fit. A horizontal squish can yield a
   *confidently wrong* transcription that misses PII classification, which the
   `meanConfidence` check cannot catch — so overflow must fail closed, not fall through.
-- **`extension/preview-gate.ts`** (new, pure, unit-tested) + **`preview.ts`**:
-  `evaluatePreviewInterrupt(aborted, elapsedMs, deadlineMs)` is checked before each
-  region **and once more after the final awaited recognition + cleanup**, so a last
-  inference (or an abort landing during it) that crossed the budget rejects instead of
-  publishing. Also catches `RecognizerInputOverflowError` → `withheld` `region-too-wide`.
-  This is **cooperative cancellation, not a hard execution cap**: a synchronous WASM
-  `session.run` already running is not interrupted — only its result is discarded.
+- **`extension/preview-gate.ts`** + **`extension/preview-regions.ts`** (new, pure,
+  unit-tested) + **`preview.ts`**: the recogniser loop + every fail-closed check is now
+  `resolveRegions(lines, recognize, interruptCheck)` — no canvas/model imports, so it is
+  unit-testable with injected fakes. `evaluatePreviewInterrupt(aborted, elapsedMs,
+  deadlineMs)` is checked before each region **and once more after the final awaited
+  recognition**; `tests/preview-regions.test.ts` proves the post-loop recheck by scripting
+  an interrupt that only fires on that last call (deleting the recheck fails the test).
+  Also catches `RecognizerInputOverflowError` → `withheld` `region-too-wide`. This is
+  **cooperative cancellation, not a hard execution cap**: a synchronous WASM `session.run`
+  already running is not interrupted — only its result is discarded.
+- **Test-only build hook** `PREVIEW_PACE_MS` (esbuild define, 0 in every real build,
+  set only by `build:e2e-isolated`): an artificial per-region delay so lifecycle-race
+  e2e (Cancel / supersede while a build is genuinely still running, with the button in
+  its real enabled state) is deterministic on fast machines.
 - **`extension/recognize.ts`**: the recognizer session is now a per-build
   `RecognizerSession` instance (created by `buildLocalPreview`, released in its own
   `finally`), not a module global. Overlapping builds (a supersede landing mid-inference)

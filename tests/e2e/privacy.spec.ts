@@ -183,12 +183,12 @@ test('supported page produces a real nonempty masked preview with opaque GT cove
   await popup.locator('details', { hasText: 'Local sanitized preview' }).locator('summary').click();
   await expect(popup.locator('#preview-image')).toBeVisible();
 
-  // Decode the ACTUAL redacted PNG bytes shown in the popup. Scan EVERY pixel across each
-  // independently-measured box (rounded inward, clamped to image bounds):
-  //  - secret box: every pixel must be fully opaque near-black (covered + opaque, not a
-  //    translucent overlay);
-  //  - benign box: must retain substantial non-black content (guards against "mask everything"
-  //    / an all-black image passing).
+  // Decode the ACTUAL redacted PNG bytes shown in the popup and scan EVERY pixel of each
+  // independently-measured box, EXPANDED 4px on every side so the text's own boundary pixels
+  // are included (still well within the +10px mask margin), clamped to image bounds:
+  //  - secret box: every pixel fully opaque near-black (covered + opaque, not translucent);
+  //  - benign box: must retain BOTH paper (near-white) and ink (dark) pixels -- proving the
+  //    label text is still there, which also rejects an all-black image AND an erased-white one.
   const scan = await popup.evaluate(async ({ boxes }) => {
     const img = document.querySelector<HTMLImageElement>('#preview-image')!;
     if (!img.src.startsWith('data:image/png;base64,')) return { error: 'not a png data url' };
@@ -197,32 +197,38 @@ test('supported page produces a real nonempty masked preview with opaque GT cove
     canvas.width = bitmap.naturalWidth; canvas.height = bitmap.naturalHeight;
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(bitmap, 0, 0);
+    const PAD = 4;
     const measure = (b: { x: number; y: number; width: number; height: number }) => {
-      const x0 = Math.max(0, Math.ceil(b.x * boxes.dpr));
-      const y0 = Math.max(0, Math.ceil(b.y * boxes.dpr));
-      const x1 = Math.min(canvas.width, Math.floor((b.x + b.width) * boxes.dpr));
-      const y1 = Math.min(canvas.height, Math.floor((b.y + b.height) * boxes.dpr));
+      const x0 = Math.max(0, Math.floor(b.x * boxes.dpr) - PAD);
+      const y0 = Math.max(0, Math.floor(b.y * boxes.dpr) - PAD);
+      const x1 = Math.min(canvas.width, Math.ceil((b.x + b.width) * boxes.dpr) + PAD);
+      const y1 = Math.min(canvas.height, Math.ceil((b.y + b.height) * boxes.dpr) + PAD);
       const w = Math.max(0, x1 - x0), h = Math.max(0, y1 - y0);
-      if (w === 0 || h === 0) return { total: 0, opaqueBlack: 0, nonBlack: 0 };
+      if (w === 0 || h === 0) return { total: 0, opaqueBlack: 0, ink: 0, paper: 0 };
       const d = ctx.getImageData(x0, y0, w, h).data;
-      let opaqueBlack = 0, nonBlack = 0;
+      let opaqueBlack = 0, ink = 0, paper = 0;
       for (let i = 0; i < d.length; i += 4) {
         const [r, g, b2, a] = [d[i], d[i + 1], d[i + 2], d[i + 3]];
         if (a === 255 && r < 16 && g < 16 && b2 < 16) opaqueBlack++;
-        else nonBlack++;
+        if (r < 120 && g < 120 && b2 < 120) ink++;
+        if (r > 200 && g > 200 && b2 > 200) paper++;
       }
-      return { total: d.length / 4, opaqueBlack, nonBlack };
+      return { total: d.length / 4, opaqueBlack, ink, paper };
     };
     return { secret: measure(boxes.secret), benign: measure(boxes.benign), imgW: canvas.width, imgH: canvas.height };
   }, { boxes });
 
   expect('error' in scan ? scan.error : '').toBe('');
-  const s = scan as { secret: { total: number; opaqueBlack: number }; benign: { total: number; nonBlack: number } };
+  const s = scan as {
+    secret: { total: number; opaqueBlack: number };
+    benign: { total: number; ink: number; paper: number };
+  };
   await info.attach('preview-pixel-scan', { body: JSON.stringify(scan), contentType: 'application/json' });
-  expect(s.secret.total).toBeGreaterThan(500);            // a real, non-degenerate box
-  expect(s.secret.opaqueBlack).toBe(s.secret.total);      // 100% of the secret box is opaque black
+  expect(s.secret.total).toBeGreaterThan(500);        // a real, non-degenerate box
+  expect(s.secret.opaqueBlack).toBe(s.secret.total);  // 100% opaque near-black across the padded box
   expect(s.benign.total).toBeGreaterThan(200);
-  expect(s.benign.nonBlack / s.benign.total).toBeGreaterThan(0.5); // benign label survived, not masked
+  expect(s.benign.paper / s.benign.total).toBeGreaterThan(0.3);   // background survived (not all-black)
+  expect(s.benign.ink / s.benign.total).toBeGreaterThan(0.02);    // label glyphs survived (not erased to white)
 
   // And the fill flow itself still works and still leaks nothing on the planner channel.
   // (#preview-status also has role=status once its <details> is expanded above, so target #status
@@ -230,74 +236,68 @@ test('supported page produces a real nonempty masked preview with opaque GT cove
   await expect(popup.locator('#status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
   await expect(page.getByLabel('Shipping address', { exact: true })).toHaveValue(VAULT);
   expect(planReqs()).toHaveLength(1);
-  expect(requests.join('')).not.toContain(SECRET);
-  expect(await readFile('test-results/server.log', 'utf8')).not.toContain(SECRET);
+  const serverLog = await readFile('test-results/server.log', 'utf8');
+  for (const leak of [SECRET, VAULT]) {
+    expect(requests.join('')).not.toContain(leak);
+    expect(serverLog).not.toContain(leak);
+  }
 });
 
-test('a second run started mid-build supersedes the first and still reaches its own result', async ({ demo, baseURL }) => {
+// The isolated e2e build sets BUILD_PREVIEW_PACE_MS so a multi-region build reliably outlives
+// the (fast) fill flow -- the two tests below need Run/Cancel to act on a genuinely in-flight
+// build, with the button in its real user-reachable enabled state (not a disabled no-op click).
+const taskIdOf = async (popup: import('@playwright/test').Page) =>
+  JSON.parse((await popup.locator('#payload').textContent()) ?? '{}').taskId as string | undefined;
+
+test('a second run, started after RESULT while the first preview is still building, supersedes it', async ({ demo, baseURL }) => {
   test.setTimeout(240_000);
   const { page, popup } = demo;
-  // Multi-line page so the first build is genuinely in flight when the second run starts,
-  // exercising overlapping builds (per-build RecognizerSession ownership) and supersede.
   await page.goto(`${baseURL}/fixture?variant=preview-multi`);
   await page.bringToFront();
   const terminal = /region\(s\) masked locally|Preview withheld/;
 
   await popup.getByRole('button', { name: 'Run private fill' }).click();
-  // Start the second run WHILE the first build is in flight (fire it synchronously the moment
-  // "Building…" appears, before the first fill even completes -- so the field is still empty).
-  const started = await popup.evaluate(async () => {
-    const ps = document.querySelector('#preview-status')!;
-    const t0 = Date.now();
-    while (ps.textContent !== 'Building local sanitized preview…') {
-      if (Date.now() - t0 > 30_000) return false;
-      await new Promise(r => setTimeout(r, 20));
-    }
-    (document.querySelector('#run') as HTMLButtonElement).click();
-    return true;
-  });
-  expect(started).toBe(true);
+  // First task completes; its preview is still building. Run is genuinely re-enabled now.
+  await expect(popup.locator('#status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+  await expect(popup.locator('#preview-status')).toHaveText('Building local sanitized preview…');
+  await expect(popup.getByRole('button', { name: 'Run private fill' })).toBeEnabled();
+  const firstTaskId = await taskIdOf(popup);
+  expect(firstTaskId).toBeTruthy();
 
-  // supersedePreview() aborted the first controller and installed a fresh one; the first
-  // build's abandoned result must never surface, and the second build must reach its own real
-  // terminal state (not a pre-aborted 'cancelled').
+  await page.getByLabel('Shipping address', { exact: true }).fill(''); // a filled field blocks the next run
+  await popup.getByRole('button', { name: 'Run private fill' }).click(); // real click, enabled button
+
   await expect(popup.locator('#preview-status')).toContainText(terminal, { timeout: 150_000 });
   const finalText = (await popup.locator('#preview-status').textContent()) ?? '';
-  expect(finalText).not.toContain('cancelled'); // the current run's own signal is live
-  await expect(popup.getByRole('status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+  expect(finalText).not.toContain('cancelled'); // the second run's own signal is live, not aborted
+  await expect(popup.locator('#status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+  const secondTaskId = await taskIdOf(popup);
+  expect(secondTaskId).toBeTruthy();
+  expect(secondTaskId).not.toBe(firstTaskId); // two distinct runs actually happened
+
+  // The first build's abandoned result must never surface after the fact.
+  await page.waitForTimeout(20_000);
+  await expect(popup.locator('#preview-status')).toContainText(terminal);
+  expect((await popup.locator('#preview-status').textContent()) ?? '').not.toContain('cancelled');
 });
 
-test('Cancel during an in-flight preview build abandons it and never publishes a result', async ({ demo, baseURL }) => {
+test('Cancel after RESULT, while the preview is still building, abandons it and never publishes', async ({ demo, baseURL }) => {
   test.setTimeout(180_000);
   const { page, popup } = demo;
-  // Eight structural lines => an eight-call build that runs for a few seconds; "Building…" is
-  // set synchronously when the capture arrives, so acting on it lands mid-build.
   await page.goto(`${baseURL}/fixture?variant=preview-multi`);
   await page.bringToFront();
   await popup.getByRole('button', { name: 'Run private fill' }).click();
 
-  // Catch the build mid-flight and fire Cancel as a synchronous DOM click (no Playwright
-  // actionability wait) so it lands within a few ms of "Building…" appearing, well before the
-  // multi-second build finishes.
-  const cancelledInFlight = await popup.evaluate(async () => {
-    const ps = document.querySelector('#preview-status')!;
-    const btn = document.querySelector('#cancel') as HTMLButtonElement;
-    const t0 = Date.now();
-    while (ps.textContent !== 'Building local sanitized preview…') {
-      if (Date.now() - t0 > 30_000) return { ok: false, reason: 'never started building' };
-      await new Promise(r => setTimeout(r, 20));
-    }
-    if (btn.disabled) return { ok: false, reason: 'cancel disabled during build' };
-    btn.click();
-    return { ok: true, statusAfter: ps.textContent };
-  });
-  expect(cancelledInFlight).toEqual({ ok: true, statusAfter: 'Not sent. Preview cancelled.' });
+  // Task done, preview still building: Cancel must remain enabled and must terminate the build.
+  await expect(popup.locator('#status')).toHaveText('Filled locally. Task cleared.', { timeout: 30_000 });
+  await expect(popup.locator('#preview-status')).toHaveText('Building local sanitized preview…');
+  await expect(popup.getByRole('button', { name: 'Cancel', exact: true })).toBeEnabled();
+  await popup.getByRole('button', { name: 'Cancel', exact: true }).click();
 
-  // Abandoned: explicit terminal state, no masked image, and it STAYS that way past the point
-  // the abandoned build would have finished internally -- its aborted result is never published.
   await expect(popup.locator('#preview-status')).toHaveText('Not sent. Preview cancelled.');
   await expect(popup.locator('#preview-image')).toBeHidden();
-  await page.waitForTimeout(15_000);
+  // Stays cancelled well past the point the abandoned build would have finished internally.
+  await page.waitForTimeout(20_000);
   await expect(popup.locator('#preview-status')).toHaveText('Not sent. Preview cancelled.');
   await expect(popup.locator('#preview-image')).toBeHidden();
 });

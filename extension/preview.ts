@@ -4,9 +4,8 @@
 // this only builds an image kept in the popup's own memory for display, per the Phase 2 plan's
 // "local original vs actually sanitized preview" UX goal, without opening protocol 2.
 import { RecognizerSession } from './recognize';
-import { RecognizerInputOverflowError } from './recognize-bounds';
 import { evaluatePreviewInterrupt } from './preview-gate';
-import { classify } from './classify';
+import { resolveRegions, type RegionPassResult } from './preview-regions';
 
 export interface TextRegion { text: string; boxes: Array<{ x: number; y: number; width: number; height: number }> }
 
@@ -32,13 +31,6 @@ export interface PreviewResult {
 // discarded. On a real page with a few structural lines the whole build is well under this.
 const MAX_PREVIEW_MS = 25_000;
 
-// Physical pixels. Below this rendered line height, upscaling to the recognizer's required
-// 48px input magnifies more than ~2.4x; fixtures/phase2/results' own tiny-text finding showed
-// this degrades recognition enough that a resulting "no match" can't be trusted as "benign" --
-// see docs/superpowers/plans/2026-09-08-phase2-detection-redaction.md and the phase2 detect.mjs
-// commit history. A conservative minimum, not a per-fixture tuned value.
-const MIN_RELIABLE_LINE_HEIGHT_PX = 20;
-const MIN_CONFIDENCE = 0.5;
 const MASK_MARGIN_PX = 10;
 // Confirmed empirically, not just a theoretical worry: recognizing the real Phase 1 checkout
 // fixture's structural lines in this actual packaged popup context took 60s+ at a cap of 24,
@@ -52,8 +44,6 @@ const MASK_MARGIN_PX = 10;
 // and fixing the underlying per-call latency/variance (e.g. enabling the wasm proxy/worker,
 // caching more aggressively across calls) is follow-up work, not done here.
 const MAX_REGIONS = 8;
-
-const canonical = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 export async function buildLocalPreview(
   screenshotDataUrl: string, regions: TextRegion[], devicePixelRatio: number,
@@ -94,57 +84,40 @@ export async function buildLocalPreview(
   }
   if (lines.length > MAX_REGIONS) return withheld('too-many-regions');
 
-  let uncertainRegionCount = 0;
-  let tooWide = false;
-  const recognized: Array<{ box: typeof lines[number]; text: string; category: string | null }> = [];
   const recognizeStart = performance.now();
   // Session owned by THIS build only -- created here, released in this finally, never shared
   // with an overlapping (superseded) build.
   const session = await RecognizerSession.create();
-  let interrupt = interruptNow();
-  try {
-    for (const box of lines) {
-      // Checked before starting each region: bounds how many more calls we begin, not one
-      // already running.
-      interrupt = interruptNow();
-      if (interrupt) break;
-      if (box.height < MIN_RELIABLE_LINE_HEIGHT_PX) { uncertainRegionCount++; continue; }
-      let rec;
-      try {
-        rec = await session.recognizeRegion(ctx, box);
-      } catch (e) {
-        if (e instanceof RecognizerInputOverflowError) { tooWide = true; break; }
-        throw e;
+  // PREVIEW_PACE_MS is 0 in every real build (this branch is then dead-code eliminated); the
+  // isolated e2e build sets it so lifecycle-race tests have a genuinely in-flight build.
+  const recognize = PREVIEW_PACE_MS > 0
+    ? async (box: TextRegion['boxes'][number]) => {
+        await new Promise(r => setTimeout(r, PREVIEW_PACE_MS));
+        return session.recognizeRegion(ctx, box);
       }
-      if (rec.meanConfidence < MIN_CONFIDENCE) { uncertainRegionCount++; continue; }
-      const text = canonical(rec.text);
-      recognized.push({ box, text, category: classify(text) });
-    }
+    : (box: TextRegion['boxes'][number]) => session.recognizeRegion(ctx, box);
+  let pass: RegionPassResult;
+  try {
+    pass = await resolveRegions(lines, recognize, interruptNow);
   } finally {
     await session.release();
   }
   const recognizeMs = performance.now() - recognizeStart;
 
-  // A region we could not reliably read (too wide to recognize without horizontal squish)
-  // withholds the whole preview -- it is never silently treated as "no PII here".
-  if (tooWide) return withheld('region-too-wide', recognizeMs);
-  // Re-check AFTER the last awaited recognition + cleanup: if that final call (or an abort that
-  // landed during it) crossed the line, reject here rather than publishing a result.
-  interrupt = interrupt ?? interruptNow();
-  if (interrupt) return withheld(interrupt, recognizeMs);
-
-  if (uncertainRegionCount > 0) {
+  // Any withheld reason from the pass -> NO image is produced (fail closed).
+  if (pass.withheldReason) return withheld(pass.withheldReason, recognizeMs);
+  if (pass.uncertainRegionCount > 0) {
     // Conservative: one unreliable region withholds the whole preview rather than shipping a
     // partially-confident mask -- the same all-or-nothing instinct as Phase 1's real contract,
     // applied here to what's shown locally, not just what's sent.
     return {
       outcome: 'withheld', withheldReason: 'uncertain-region', redactedDataUrl: null,
-      maskedRegionCount: 0, uncertainRegionCount,
+      maskedRegionCount: 0, uncertainRegionCount: pass.uncertainRegionCount,
       timingMs: { recognize: recognizeMs, total: performance.now() - start },
     };
   }
 
-  const maskedRegions = recognized.filter(r => r.category).map(r => r.box);
+  const maskedRegions = pass.recognized.filter(r => r.category).map(r => r.box);
   ctx.fillStyle = '#000000';
   for (const box of maskedRegions) {
     ctx.fillRect(box.x - MASK_MARGIN_PX, box.y - MASK_MARGIN_PX, box.width + MASK_MARGIN_PX * 2, box.height + MASK_MARGIN_PX * 2);
