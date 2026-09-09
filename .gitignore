@@ -20,3 +20,4 @@ dist-e2e/
 # The JSON reports (pipeline-output.json, leakage-report.json) are committed as evidence; the images that produced them are not.
 fixtures/phase2/screenshots/
 fixtures/phase2/results/*.png
+dist.rollback-*/
