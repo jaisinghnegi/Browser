@@ -22,7 +22,7 @@
     <header class="topbar">
       <div><span class="breadcrumb">Workspace</span><span class="slash">/</span> Local chat</div>
       <button id="mobile-new" class="mobile-new" aria-label="New conversation">＋</button>
-      <div class="model-picker"><span class="status-dot"></span><label for="model">Model</label><select id="model"><option value="qwen-local">Qwen · Local</option></select></div>
+      <div class="model-picker"><span id="status-dot" class="status-dot" data-state="checking"></span><label for="model">Model</label><select id="model"><option value="qwen-local">Qwen · Local</option></select><span id="model-state" class="model-state">checking…</span></div>
     </header>
     <section class="chat-area" aria-label="Conversation workspace">
       <div id="welcome" class="welcome">
@@ -44,9 +44,9 @@
       <form id="chat-form" class="composer">
         <label class="sr-only" for="prompt">Message Qwen</label>
         <textarea id="prompt" rows="2" maxlength="4000" placeholder="What's on your mind?"></textarea>
-        <div class="composer-bottom"><span><span class="status-dot"></span> Qwen on your device <span class="separator">·</span> Text only</span><button id="send" type="submit" aria-label="Send message">↑</button><button id="stop" type="button" hidden>Stop</button></div>
+        <div class="composer-bottom"><span><span id="composer-dot" class="status-dot" data-state="checking"></span> <span id="composer-model">Qwen</span> on your device <span class="separator">·</span> Text only</span><button id="send" type="submit" aria-label="Send message">↑</button><button id="stop" type="button" hidden>Stop</button></div>
       </form>
-      <p class="privacy-note">Typed messages go to local Qwen without automatic redaction. Chat cannot act on browser pages.<br>Conversation stays in this tab's memory. Refreshing or starting a new chat clears it.</p>
+      <p class="privacy-note">Typed messages go to your local Qwen model without automatic redaction. Chat cannot act on browser pages.<br>Your recent messages are held in this tab and sent to local Qwen with each reply; this app does not save them. Refreshing or New chat clears them from the tab.</p>
     </footer>
   </main>
 </body>

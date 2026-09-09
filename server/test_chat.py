@@ -78,3 +78,24 @@ def test_chat_page_and_assets_are_local():
     assert client.get('/app.js').status_code == 200
     assert client.get('/app.css').status_code == 200
     assert client.get('/api/models').json()['models'][0]['id'] == 'qwen-local'
+
+
+def test_models_ready_reflects_a_bounded_probe(monkeypatch):
+    seen = []
+
+    def handler(request):
+        seen.append(request.url.path)
+        return httpx.Response(200, json={'status': 'ok'})
+
+    mock_model(monkeypatch, handler)
+    body = TestClient(app).get('/api/models').json()['models'][0]
+    assert body['id'] == 'qwen-local' and body['ready'] is True
+    assert seen == ['/health']  # a health probe, not a generation call
+
+
+def test_models_ready_false_when_model_unreachable_without_leaking_details(monkeypatch):
+    mock_model(monkeypatch, lambda _: httpx.Response(503, text='private model internals'))
+    response = TestClient(app).get('/api/models')
+    body = response.json()['models'][0]
+    assert body['ready'] is False
+    assert 'private model internals' not in response.text

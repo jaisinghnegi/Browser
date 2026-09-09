@@ -7,8 +7,43 @@ const notice = document.querySelector('#notice');
 const send = document.querySelector('#send');
 const stop = document.querySelector('#stop');
 const thinking = document.querySelector('#thinking');
+const statusDot = document.querySelector('#status-dot');
+const composerDot = document.querySelector('#composer-dot');
+const modelState = document.querySelector('#model-state');
+const modelSelect = document.querySelector('#model');
+const composerModel = document.querySelector('#composer-model');
 let history = [];
 let active = null;
+let ready = null; // null = unknown/checking, true = probed ready, false = probed unavailable
+
+const STATE_TEXT = { checking: 'checking…', ready: 'ready', unavailable: 'unavailable' };
+function renderModelState(state) {
+  statusDot.dataset.state = state;
+  composerDot.dataset.state = state;
+  modelState.textContent = STATE_TEXT[state];
+  // Only a DEFINITIVE unavailable disables Send; while checking we stay optimistic.
+  send.disabled = state === 'unavailable';
+}
+
+async function refreshModel() {
+  renderModelState('checking');
+  ready = null;
+  try {
+    const res = await fetch('/api/models', { headers: { Accept: 'application/json' } });
+    const model = (await res.json())?.models?.[0];
+    if (model) {
+      const label = `${model.name}${model.location === 'local' ? ' · Local' : ''}`;
+      if (modelSelect.options[0]) { modelSelect.options[0].textContent = label; modelSelect.options[0].value = model.id; }
+      composerModel.textContent = model.name;
+    }
+    ready = model?.ready === true;
+    renderModelState(ready ? 'ready' : 'unavailable');
+  } catch {
+    ready = false;
+    renderModelState('unavailable');
+  }
+}
+refreshModel();
 
 function addMessage(role, text) {
   const article = document.createElement('article');
@@ -97,7 +132,10 @@ form.addEventListener('submit', async event => {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: context }), signal: controller.signal,
     });
-    if (!response.ok) throw new Error(response.status === 422 ? 'Message could not be accepted. Start a new conversation and try again.' : 'Local Qwen is unavailable or busy. Try again shortly.');
+    if (!response.ok) {
+      if (response.status !== 422) void refreshModel(); // re-probe readiness after an outage
+      throw new Error(response.status === 422 ? 'Message could not be accepted. Start a new conversation and try again.' : 'Local Qwen is unavailable or busy. Try again shortly.');
+    }
     const result = await response.json();
     if (typeof result.reply !== 'string' || result.provider !== 'qwen-local') throw new Error('Unexpected model response. Please try again.');
     if (active !== controller || controller.signal.aborted) return;

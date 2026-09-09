@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Annotated, Literal
 
+import httpx
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -55,9 +56,21 @@ def create_chat_router(base_url: str) -> APIRouter:
     def chat_style():
         return FileResponse(WEB / 'app.css', media_type='text/css', headers={'Cache-Control': 'no-store'})
 
+    async def _model_ready() -> bool:
+        """Short, bounded loopback health probe. Returns a plain boolean -- the model server's
+        response body is never surfaced to the client."""
+        try:
+            async with httpx.AsyncClient(timeout=1.5, trust_env=False) as client:
+                res = await client.get(f'{base_url}/health')
+            return res.status_code == 200
+        except (httpx.HTTPError, ValueError):
+            return False
+
     @router.get('/api/models')
-    def models():
-        return {'models': [{'id': 'qwen-local', 'name': 'Qwen', 'location': 'local'}]}
+    async def models():
+        # `ready` reflects an actual probe, so the UI can show honest checking/ready/unavailable
+        # state instead of a permanently green dot. Still Qwen-only until a real second backend.
+        return {'models': [{'id': 'qwen-local', 'name': 'Qwen', 'location': 'local', 'ready': await _model_ready()}]}
 
     @router.post('/api/chat')
     async def chat(body: ChatRequest, request: Request):
